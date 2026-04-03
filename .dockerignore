@@ -1,7 +1,7 @@
 venv/
 setup.py
 report.txt
-data/*.csv
+tootls/
 __pycache__/
 *.pyc
 .env

@@ -22,6 +22,8 @@ steps:
       - --region=asia-northeast1
       - --platform=managed
       - --allow-unauthenticated
+      - --vpc-connector=laplace-connector
+      - --egress-settings=all
 
 options:
   logging: CLOUD_LOGGING_ONLY

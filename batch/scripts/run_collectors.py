@@ -1,5 +1,5 @@
-from batch.db import get_connection
-from batch.collectors.rakuten import RakutenCollector
+from db import get_connection
+from collectors.rakuten import RakutenCollector
 from datetime import datetime, timedelta
 import time
 

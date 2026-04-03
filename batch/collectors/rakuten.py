@@ -1,4 +1,4 @@
-from batch.collectors.base import DataCollector
+from collectors.base import DataCollector
 import requests
 import os
 from dotenv import load_dotenv

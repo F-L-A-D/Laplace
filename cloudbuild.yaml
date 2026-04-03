@@ -23,7 +23,7 @@ steps:
       - --platform=managed
       - --allow-unauthenticated
       - --vpc-connector=laplace-connector
-      - --egress-settings=all
+      - --vpc-egress=all
 
 options:
   logging: CLOUD_LOGGING_ONLY

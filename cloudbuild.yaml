@@ -1,0 +1,25 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t', 'gcr.io/$PROJECT_ID/laplace-batch',
+      './batch'
+    ]
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'push',
+      'gcr.io/$PROJECT_ID/laplace-batch'
+    ]
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    args:
+      - run
+      - deploy
+      - laplace-batch
+      - --image=gcr.io/$PROJECT_ID/laplace-batch
+      - --region=asia-northeast1
+      - --platform=managed
+      - --allow-unauthenticated
+      - --vpc-connector=laplace-connector
+      - --egress-settings=all

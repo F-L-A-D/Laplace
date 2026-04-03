@@ -1,0 +1,10 @@
+venv/
+setup.py
+report.txt
+data/*.csv
+__pycache__/
+*.pyc
+.env
+dump.sql
+.git/
+.gitignore

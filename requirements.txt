@@ -1,0 +1,14 @@
+certifi==2026.2.25
+cffi==2.0.0
+charset-normalizer==3.4.6
+cryptography==46.0.6
+greenlet==3.3.2
+idna==3.11
+jpholiday==1.0.3
+pycparser==3.0
+pyee==13.0.1
+PyMySQL==1.1.2
+python-dotenv==1.2.2
+requests==2.33.1
+typing_extensions==4.15.0
+urllib3==2.6.3

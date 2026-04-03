@@ -1,0 +1,8 @@
+venv/
+setup.py
+report.txt
+tools/data/*.csv
+__pycache__/
+*.pyc
+.env
+dump.sql

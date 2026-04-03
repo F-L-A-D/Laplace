@@ -71,7 +71,7 @@ def save_prices(hotel_id, source_id, results):
 # 楽天メイン処理
 # ------------------------
 def run_rakuten():
-    SAVE_DB = False
+    SAVE_DB = True
 
     collector = RakutenCollector()
     QPS = 3

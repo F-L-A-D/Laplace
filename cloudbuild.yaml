@@ -13,17 +13,23 @@ steps:
     ]
 
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
+    entrypoint: bash
     args:
-      - run
-      - deploy
-      - laplace-batch
-      - --image=gcr.io/$PROJECT_ID/laplace-batch
-      - --region=asia-northeast1
-      - --platform=managed
-      - --allow-unauthenticated
-      - --vpc-connector=laplace-connector
-      - --vpc-egress=all
+      - -c
+      - |
+        if gcloud run jobs describe laplace-job --region=asia-northeast1; then
+          gcloud run jobs update laplace-job \
+            --image=gcr.io/$PROJECT_ID/laplace-batch \
+            --region=asia-northeast1 \
+            --vpc-connector=laplace-connector \
+            --vpc-egress=all
+        else
+          gcloud run jobs create laplace-job \
+            --image=gcr.io/$PROJECT_ID/laplace-batch \
+            --region=asia-northeast1 \
+            --vpc-connector=laplace-connector \
+            --vpc-egress=all
+        fi
 
 options:
   logging: CLOUD_LOGGING_ONLY

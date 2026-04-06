@@ -3,13 +3,22 @@ import requests
 import os
 from dotenv import load_dotenv
 import time
+import threading
 
 load_dotenv()
 
 class RakutenCollector(DataCollector):
     BASE_URL = "https://openapi.rakuten.co.jp/engine/api/Travel/VacantHotelSearch/20170426"
 
-    def build_rakuten_params(self, checkin, checkout, hotel_no):
+    def __init__(self, limiter):
+        self.session = requests.Session()
+        self.limiter = limiter
+
+        self.success = 0
+        self.limit_hit = 0
+        self.lock = threading.Lock()
+
+    def build_params(self, checkin, checkout, hotel_no):
         return {
             "format": "json",
             "checkinDate": checkin,
@@ -22,37 +31,41 @@ class RakutenCollector(DataCollector):
             "accessKey": os.getenv("RAKUTEN_ACCESS_KEY")
         }
 
-
     def fetch_price(self, hotel, checkin, checkout):
-        hotel_no = hotel["external_id"]
-        params = self.build_rakuten_params(checkin, checkout, hotel_no)
+        self.limiter.wait()
 
-        for _ in range(3):
+        params = self.build_params(checkin, checkout, hotel["external_id"])
+
+        for _ in range(2):
             try:
-                res = requests.get(self.BASE_URL, params=params, timeout=10)
+                res = self.session.get(self.BASE_URL, params=params, timeout=10)
 
                 if res.status_code == 200:
                     data = res.json()
+                    with self.lock:
+                        self.success += 1
                     return self._extract_price(data)
 
                 elif res.status_code == 429:
-                    print("Rate limit hit. sleep...")
-                    time.sleep(2)
+                    with self.lock:
+                        self.limit_hit += 1
+                    time.sleep(0.2)
 
                 else:
-                    print(f"ERROR: {res.status_code}")
                     return None
 
-            except requests.exceptions.RequestException as e:
-                print(f"Connection error: {e}")
-                time.sleep(2)
+            except requests.exceptions.RequestException:
+                time.sleep(1)
 
         return None
 
-
     def _extract_price(self, data):
         try:
-            rooms = data["hotels"][0]["hotel"][1]["roomInfo"]
+            hotels = data.get("hotels")
+            if not hotels:
+                return None
+
+            rooms = hotels[0]["hotel"][1]["roomInfo"]
 
             prices = [
                 r["dailyCharge"]["total"]
@@ -64,3 +77,7 @@ class RakutenCollector(DataCollector):
 
         except Exception:
             return None
+
+    def hit_rate(self):
+        total = self.success + self.limit_hit
+        return self.limit_hit / total if total > 0 else 0

@@ -6,3 +6,4 @@ __pycache__/
 *.pyc
 .env
 dump.sql
+tmp.txt

@@ -10,10 +10,10 @@ import sys
 import time
 
 # --- 設定 ---
-BATCH_SIZE = 2
-MAX_WORKERS = 2
+BATCH_SIZE = 4
+MAX_WORKERS = 4
 DATE_CHUNK = 30
-MIN_INTERVAL = 1.1
+MIN_INTERVAL = 0.8
 SAVE_DB = True
 DEBUG = os.getenv("DEBUG") == "1"
 

@@ -1,3 +1,5 @@
+#tools/import_csv.py
+
 import csv
 from batch.db import get_connection
 
@@ -54,4 +56,4 @@ def import_hotel_sources(csv_path):
 if __name__ == "__main__":
     import_hotels("data/hotels.csv")
     import_hotel_sources("data/hotel_sources.csv")
-    print("✅ CSV import done")
+    print("== CSV import done ===")

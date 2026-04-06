@@ -83,6 +83,18 @@ def get_hotels(source_id):
         return hotels[:1]
     else:
         return hotels
+    
+
+# ------------------------
+# バリデーション
+# ------------------------
+def _has_valid_price(hotel_results):
+    for results in hotel_results.values():
+        for (_, price, _, _) in results:
+            if price is not None:
+                return True
+            
+    return False
 
 # ------------------------
 # DB保存
@@ -167,7 +179,8 @@ def run_rakuten():
                     continue
 
                 hotel_results = {}
-
+                saved_reviews = set()
+                
                 for h in batch:
                     hotel_id = h["hotel_id"]
                     ext_id = int(h["external_id"])
@@ -181,10 +194,16 @@ def run_rakuten():
                     if hotel_id not in hotel_results:
                         hotel_results[hotel_id] = []
 
-                    hotel_results[hotel_id].append((checkin, price, review_avg, review_count))
+                    if hotel_id not in saved_reviews:
+                        hotel_results[hotel_id].append((checkin, price, review_avg, review_count))
+                        saved_reviews.add(hotel_id)
+                    else:
+                        hotel_results[hotel_id].append((checkin, price, None, None))
 
-                if SAVE_DB:
+                if SAVE_DB and _has_valid_price(hotel_results):
                     save_data(hotel_results, collector)
+                else:
+                    print(f"=== SKIP INSERT: {checkin} ===")
 
     print("-"*20)
     print(f"TOTAL TIME: {time.time()-start_time:.2f}s")

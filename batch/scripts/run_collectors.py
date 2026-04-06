@@ -3,6 +3,7 @@ from collectors.rakuten import RakutenCollector
 from collectors.limiter import RateLimiter
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
+import os
 import sys
 import time
 
@@ -12,7 +13,7 @@ MAX_WORKERS = 3
 DATE_CHUNK = 30
 MIN_INTERVAL = 0.5
 SAVE_DB = True
-
+DEBUG = os.getenv("DEBUG") == "1"
 
 # ------------------------
 # 日付生成
@@ -33,6 +34,9 @@ def build_dates(start, count):
 # 実行範囲
 # ------------------------
 def get_target_days():
+    if DEBUG:
+        return 3
+
     today = datetime.today().weekday()
 
     if today == 0:
@@ -59,8 +63,10 @@ def get_hotels(source_id):
     hotels = cursor.fetchall()
     conn.close()
 
-    return hotels
-
+    if DEBUG:
+        return hotels[:1]
+    else:
+        return hotels
 
 # ------------------------
 # DB保存

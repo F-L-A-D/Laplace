@@ -22,13 +22,13 @@ steps:
             --image=gcr.io/$PROJECT_ID/laplace-batch \
             --region=asia-northeast1 \
             --vpc-connector=laplace-connector \
-            --vpc-egress=private-ranges-only
+            --vpc-egress=all-traffic
         else
           gcloud run jobs create laplace-job \
             --image=gcr.io/$PROJECT_ID/laplace-batch \
             --region=asia-northeast1 \
             --vpc-connector=laplace-connector \
-            --vpc-egress=private-ranges-only
+            --vpc-egress=all-traffic
         fi
 
 options:

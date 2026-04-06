@@ -1,3 +1,5 @@
+#batch/scripts/run_collectors.py
+
 from db import get_connection
 from collectors.rakuten import RakutenCollector
 from collectors.limiter import RateLimiter
@@ -8,10 +10,10 @@ import sys
 import time
 
 # --- 設定 ---
-BATCH_SIZE = 3
-MAX_WORKERS = 3
+BATCH_SIZE = 2
+MAX_WORKERS = 2
 DATE_CHUNK = 30
-MIN_INTERVAL = 0.5
+MIN_INTERVAL = 1.1
 SAVE_DB = True
 DEBUG = os.getenv("DEBUG") == "1"
 
@@ -155,4 +157,6 @@ def run_rakuten():
 
 
 if __name__ == "__main__":
+    if DEBUG:
+        print("---------- DEBUG MODE ----------")
     run_rakuten()

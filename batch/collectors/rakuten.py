@@ -1,7 +1,10 @@
+#batch/collectors/rakuten.py
+
 from collectors.base import DataCollector
 import requests
 import os
 from dotenv import load_dotenv
+import random
 import time
 import threading
 
@@ -17,8 +20,13 @@ class RakutenCollector(DataCollector):
         self.success = 0
         self.limit_hit = 0
         self.lock = threading.Lock()
-        self.headers = {"User-Agent": "Mozilla/5.0"}
-        
+        self.headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "ja,en-US;q=0.9,en;q=0.8",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
+        }
 
     def build_params(self, checkin, checkout, hotel_no):
         return {
@@ -50,11 +58,16 @@ class RakutenCollector(DataCollector):
                     with self.lock:
                         self.success += 1
                     return self._extract_price(data)
+                
+                elif res.status_code == 403:
+                    with self.lock:
+                        self.limit_hit += 1
+                    return None
 
                 elif res.status_code == 429:
                     with self.lock:
                         self.limit_hit += 1
-                    time.sleep(0.2)
+                    time.sleep(2 + random.random())
 
                 else:
                     return None

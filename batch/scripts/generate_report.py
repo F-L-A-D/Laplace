@@ -1,4 +1,6 @@
-from batch.db import get_connection
+#batch/scripts/generate_report.py
+
+from db import get_connection
 from datetime import datetime, timedelta
 import jpholiday
 

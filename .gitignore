@@ -7,3 +7,4 @@ __pycache__/
 .env
 dump.sql
 tmp.txt
+test.py

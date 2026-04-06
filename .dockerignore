@@ -1,10 +1,11 @@
 venv/
 setup.py
 report.txt
-tootls/
+tools/
 __pycache__/
 *.pyc
 .env
 dump.sql
 .git/
 .gitignore
+test.py

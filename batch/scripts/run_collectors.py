@@ -170,7 +170,7 @@ def run_rakuten():
 
                 for h in batch:
                     hotel_id = h["hotel_id"]
-                    ext_id = h["external_id"]
+                    ext_id = int(h["external_id"])
 
                     data = price_map.get(ext_id, {})
 

@@ -3,7 +3,6 @@
 from db import get_connection
 from collectors.rakuten import RakutenCollector
 from collectors.limiter import RateLimiter
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 import os
 import sys
@@ -11,11 +10,11 @@ import time
 
 # --- 設定 ---
 BATCH_SIZE = 4
-MAX_WORKERS = 4
 DATE_CHUNK = 30
 MIN_INTERVAL = 0.8
 SAVE_DB = True
 DEBUG = os.getenv("DEBUG") == "1"
+MAX_HOTELS = 15
 
 if DEBUG:
     SAVE_DB = False
@@ -89,41 +88,44 @@ def get_hotels(source_id):
 # ------------------------
 # DB保存
 # ------------------------
-def save_prices(hotel_id, source_id, results):
+def save_data(hotel_results, collector):
     conn = get_connection()
     cursor = conn.cursor()
 
-    data = []
-    for checkin, price in results:
-        status = "available" if price else "sold_out"
-        data.append((hotel_id, source_id, checkin, price, status))
+    price_data = []
+    review_data = []
 
-    cursor.executemany("""
-    INSERT INTO prices (hotel_id, source_id, date, price, status, collected_at)
-    VALUES (%s, %s, %s, %s, %s, NOW())
-    """, data)
+    for hotel_id, results in hotel_results.items():
+        for (d, p, review_avg, review_count) in results:
+            status = "available" if p is not None else "sold_out"
+
+            price_data.append(
+                (hotel_id, 1, d, p, status)
+            )
+
+            if collector.get_review and review_avg is not None:
+                review_data.append(
+                    (hotel_id, 1, review_avg, review_count)
+                )
+
+    if price_data:
+        cursor.executemany("""
+        INSERT INTO prices (hotel_id, source_id, date, price, status, collected_at)
+        VALUES (%s, %s, %s, %s, %s, NOW())
+        """, price_data)
+
+    if review_data:
+        cursor.executemany("""
+        INSERT INTO reviews (hotel_id, source_id, score, review_count)
+        VALUES (%s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE
+            score = VALUES(score),
+            review_count = VALUES(review_count),
+            collected_at = NOW()
+        """, review_data)
 
     conn.commit()
     conn.close()
-
-# ------------------------
-# ホテル処理
-# ------------------------
-def process_hotel(hotel, collector, date_pairs):
-    hotel_id = hotel["hotel_id"]
-
-    print(f"=== START hotel_id={hotel_id} ===")
-
-    results = []
-    for checkin, checkout in date_pairs:
-        price = collector.fetch_price(hotel, checkin, checkout)
-        results.append((checkin, price))
-
-    if SAVE_DB:
-        save_prices(hotel_id, 1, results)
-
-    print(f"=== DONE hotel_id={hotel_id} ===")
-
 
 # ------------------------
 # 楽天
@@ -135,13 +137,14 @@ def run_rakuten():
     collector = RakutenCollector(limiter)
 
     hotels = get_hotels(source_id=1)
+
     args = parse_args()
     target_hotel_id = int(args["hotel_id"]) if "hotel_id" in args else None
 
     if target_hotel_id:
         hotels = [h for h in hotels if h["hotel_id"] == target_hotel_id]
         print(f"=== TARGET HOTEL: {target_hotel_id} ===")
-    
+
     days = get_target_days()
 
     for offset in range(1, days+1, DATE_CHUNK):
@@ -150,19 +153,39 @@ def run_rakuten():
 
         print(f"=== DATE {offset}-{offset+count-1} ===")
 
-        for i in range(0, len(hotels), BATCH_SIZE):
-            batch = hotels[i:i+BATCH_SIZE]
+        for checkin, checkout in date_pairs:
 
-            print(f"=== BATCH {i}-{i+len(batch)} ===")
+            print(f"--- {checkin} ---")
 
-            with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-                futures = [
-                    executor.submit(process_hotel, hotel, collector, date_pairs)
-                    for hotel in batch
-                ]
+            for i in range(0, len(hotels), MAX_HOTELS):
+                batch = hotels[i:i+MAX_HOTELS]
 
-                for f in futures:
-                    f.result()
+                print(f"=== HOTEL BATCH {i}-{i+len(batch)} ===")
+
+                price_map = collector.fetch_prices(batch, checkin, checkout)
+
+                if not price_map:
+                    continue
+
+                hotel_results = {}
+
+                for h in batch:
+                    hotel_id = h["hotel_id"]
+                    ext_id = h["external_id"]
+
+                    data = price_map.get(ext_id, {})
+
+                    price = data.get("price")
+                    review_avg = data.get("review_avg")
+                    review_count = data.get("review_count")
+
+                    if hotel_id not in hotel_results:
+                        hotel_results[hotel_id] = []
+
+                    hotel_results[hotel_id].append((checkin, price, review_avg, review_count))
+
+                if SAVE_DB:
+                    save_data(hotel_results, collector)
 
     print("-"*20)
     print(f"TOTAL TIME: {time.time()-start_time:.2f}s")

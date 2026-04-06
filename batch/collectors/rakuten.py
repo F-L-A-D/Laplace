@@ -3,6 +3,7 @@
 from collectors.base import DataCollector
 import requests
 import os
+from datetime import datetime
 from dotenv import load_dotenv
 import random
 import time
@@ -17,6 +18,7 @@ class RakutenCollector(DataCollector):
         self.session = requests.Session()
         self.limiter = limiter
 
+        self.get_review = datetime.today().weekday() == 0
         self.success = 0
         self.limit_hit = 0
         self.lock = threading.Lock()
@@ -28,23 +30,25 @@ class RakutenCollector(DataCollector):
             "Pragma": "no-cache",
         }
 
-    def build_params(self, checkin, checkout, hotel_no):
+    def build_params(self, checkin, checkout, hotels):
+        hotel_nos = ",".join(str(h["external_id"]) for h in hotels)
+
         return {
             "format": "json",
             "checkinDate": checkin,
             "checkoutDate": checkout,
-            "hotelNo": hotel_no,
+            "hotelNo": hotel_nos,
             "adultNum": 2,
             "roomNum": 1,
-            "sort": "standard",
+            "sort": "+roomCharge",
             "applicationId": os.getenv("RAKUTEN_APP_ID"),
             "accessKey": os.getenv("RAKUTEN_ACCESS_KEY")
         }
 
-    def fetch_price(self, hotel, checkin, checkout):
+    def fetch_prices(self, hotels, checkin, checkout):
         self.limiter.wait()
 
-        params = self.build_params(checkin, checkout, hotel["external_id"])
+        params = self.build_params(checkin, checkout, hotels)
 
         for _ in range(2):
             try:
@@ -54,13 +58,13 @@ class RakutenCollector(DataCollector):
                     data = res.json()
                     with self.lock:
                         self.success += 1
-                    return self._extract_price(data)
+                    return self._parse_response(data)
                 
                 elif res.status_code == 403:
-                    print(f"403 Rate Limit Hit. Return None.\nHotel: {hotel["hotel_id"]} | Checkin: {checkin}")
+                    print(f"403 Rate Limit Hit. Checkin: {checkin}")
                     with self.lock:
                         self.limit_hit += 1
-                    return None
+                    return {}
 
                 elif res.status_code == 429:
                     print("429 Rate Limit Hit. Sleep...")
@@ -69,31 +73,53 @@ class RakutenCollector(DataCollector):
                     time.sleep(2 + random.random())
 
                 else:
-                    return None
+                    return {}
 
             except requests.exceptions.RequestException:
                 time.sleep(1)
 
-        return None
+        return {}
 
-    def _extract_price(self, data):
-        try:
-            hotels = data.get("hotels")
-            if not hotels:
-                return None
+    def _parse_response(self, data):
+        result = {}
+        hotels = data.get("hotels", [])
 
-            rooms = hotels[0]["hotel"][1]["roomInfo"]
+        for h in hotels:
+            hotel_block = h.get("hotel", [])
+            if len(hotel_block) < 2:
+                continue
 
-            prices = [
-                r["dailyCharge"]["total"]
-                for r in rooms
-                if "dailyCharge" in r
-            ]
+            basic = hotel_block[0].get("hotelBasicInfo", {})
+            rooms = hotel_block[1].get("roomInfo") or []
+            hotel_no = basic.get("hotelNo")
 
-            return min(prices) if prices else None
+            if not hotel_no:
+                continue
 
-        except Exception:
-            return None
+            prices = []
+
+            for r in rooms:
+                charge = r.get("dailyCharge")
+                if charge and "total" in charge:
+                    prices.append(charge["total"])
+            
+            price = min(prices) if prices else None
+
+            if self.get_review:
+                review_avg = basic.get("reviewAverage")
+                review_count = basic.get("reviewCount")
+            else:
+                review_avg = None
+                review_count = None
+
+            result[hotel_no] = {
+                "price": price,
+                "review_avg": review_avg,
+                "review_count": review_count
+            }
+
+        return result
+
 
     def hit_rate(self):
         total = self.success + self.limit_hit

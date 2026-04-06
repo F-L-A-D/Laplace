@@ -30,13 +30,13 @@ def run():
     for hid in hotel_ids:
         print(f"Dispatch Job: hotel_id={hid}")
 
-        subprocess.Popen([
+        subprocess.run([
             "gcloud", "run", "jobs", "execute", JOB_NAME,
             f"--region={REGION}",
             f"--project={PROJECT}",
-            f"--args=-m,scripts.run_collectors,{hid}"
+            f"--args=hotel_id={hid}"
         ])
-        time.sleep(0.2)
+        time.sleep(1)
 
 
 if __name__ == "__main__":

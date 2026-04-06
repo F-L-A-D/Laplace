@@ -20,6 +20,19 @@ DEBUG = os.getenv("DEBUG") == "1"
 if DEBUG:
     SAVE_DB = False
 
+
+# ------------------------
+# 引数受け取り
+# ------------------------
+def parse_args():
+    args = {}
+    for arg in sys.argv[1:]:
+        if "=" in arg:
+            k, v = arg.split("=", 1)
+            args[k] = v
+
+    return args
+
 # ------------------------
 # 日付生成
 # ------------------------
@@ -122,9 +135,10 @@ def run_rakuten():
     collector = RakutenCollector(limiter)
 
     hotels = get_hotels(source_id=1)
+    args = parse_args()
+    target_hotel_id = int(args["hotel_id"]) if "hotel_id" in args else None
 
-    if len(sys.argv) > 1:
-        target_hotel_id = int(sys.argv[1])
+    if target_hotel_id:
         hotels = [h for h in hotels if h["hotel_id"] == target_hotel_id]
         print(f"=== TARGET HOTEL: {target_hotel_id} ===")
     

@@ -42,16 +42,13 @@ class RakutenCollector(DataCollector):
         }
 
     def fetch_price(self, hotel, checkin, checkout):
-        print("=== START FETCH ===")
         self.limiter.wait()
 
         params = self.build_params(checkin, checkout, hotel["external_id"])
 
         for _ in range(2):
             try:
-                print("=== BEFORE REQUEST ===", params)
                 res = self.session.get(self.BASE_URL, params=params, headers=self.headers, timeout=10)
-                print("=== AFTER REQUEST ===", res.status_code)
 
                 if res.status_code == 200:
                     data = res.json()
@@ -60,11 +57,13 @@ class RakutenCollector(DataCollector):
                     return self._extract_price(data)
                 
                 elif res.status_code == 403:
+                    print(f"403 Rate Limit Hit. Return None.\nHotel: {hotel["hotel_id"]} | Checkin: {checkin}")
                     with self.lock:
                         self.limit_hit += 1
                     return None
 
                 elif res.status_code == 429:
+                    print("429 Rate Limit Hit. Sleep...")
                     with self.lock:
                         self.limit_hit += 1
                     time.sleep(2 + random.random())

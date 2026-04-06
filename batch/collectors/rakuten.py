@@ -17,6 +17,8 @@ class RakutenCollector(DataCollector):
         self.success = 0
         self.limit_hit = 0
         self.lock = threading.Lock()
+        self.headers = {"User-Agent": "Mozilla/5.0"}
+        
 
     def build_params(self, checkin, checkout, hotel_no):
         return {
@@ -40,7 +42,7 @@ class RakutenCollector(DataCollector):
         for _ in range(2):
             try:
                 print("=== BEFORE REQUEST ===", params)
-                res = self.session.get(self.BASE_URL, params=params, timeout=10)
+                res = self.session.get(self.BASE_URL, params=params, headers=self.headers, timeout=10)
                 print("=== AFTER REQUEST ===", res.status_code)
 
                 if res.status_code == 200:

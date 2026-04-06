@@ -15,6 +15,9 @@ MIN_INTERVAL = 0.5
 SAVE_DB = True
 DEBUG = os.getenv("DEBUG") == "1"
 
+if DEBUG:
+    SAVE_DB = False
+
 # ------------------------
 # 日付生成
 # ------------------------

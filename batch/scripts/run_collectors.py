@@ -158,6 +158,8 @@ def run_rakuten():
 
     days = get_target_days()
 
+    print(f"[BATCH START] DATE COUNT: {days}")
+
     for offset in range(1, days+1, DATE_CHUNK):
         count = min(DATE_CHUNK, days-offset+1)
         date_pairs = build_dates(offset, count)
@@ -206,12 +208,14 @@ def run_rakuten():
                     print(f"=== SKIP INSERT: {checkin} ===")
 
     print("-"*20)
-    print(f"TOTAL TIME: {time.time()-start_time:.2f}s")
-    print(f"HIT RATE: {collector.hit_rate():.2%}")
+    print(f"[BATCH END] TOTAL TIME: {time.time()-start_time:.2f}s")
+    print(f"[BATCH END] HIT RATE: {collector.hit_rate():.2%}")
     print("-"*20)
 
 
 if __name__ == "__main__":
     if DEBUG:
         print("---------- DEBUG MODE ----------")
+    else:
+        print("---------- MAIN EXECUTED ----------")
     run_rakuten()

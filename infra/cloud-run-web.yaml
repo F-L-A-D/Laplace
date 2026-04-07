@@ -4,6 +4,10 @@ metadata:
   name: laplace-web
 spec:
   template:
+    metadata:
+      annotations:
+        run.googleapis.com/vpc-access-connector: laplace-connector
+        run.googleapis.com/vpc-access-egress: all
     spec:
       containers:
         - image: gcr.io/gen-lang-client-0262945179/laplace-web
@@ -12,3 +16,27 @@ spec:
           env:
             - name: NODE_ENV
               value: production
+
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: DB_HOST
+                  key: latest
+
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: DB_USER
+                  key: latest
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: DB_PASSWORD
+                  key: latest
+
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: DB_NAME
+                  key: latest

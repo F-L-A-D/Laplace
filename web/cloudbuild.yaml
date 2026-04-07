@@ -2,14 +2,14 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'build',
-      '-t', 'asia-northeast1-docker.pkg.dev/$PROJECT_ID/laplace/laplace-web',
+      '-t', 'gcr.io/$PROJECT_ID/laplace-web',
       '.'
     ]
 
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'push',
-      'asia-northeast1-docker.pkg.dev/$PROJECT_ID/laplace/laplace-web'
+      'gcr.io/$PROJECT_ID/laplace-web'
     ]
 
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -17,7 +17,7 @@ steps:
     args:
       [
         'run', 'deploy', 'laplace-web',
-        '--image=asia-northeast1-docker.pkg.dev/$PROJECT_ID/laplace/laplace-web',
+        '--image=gcr.io/$PROJECT_ID/laplace-web',
         '--region=asia-northeast1',
         '--platform=managed',
         '--allow-unauthenticated'

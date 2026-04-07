@@ -1,0 +1,54 @@
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: laplace-job
+spec:
+  template:
+    spec:
+      template:
+        spec:
+          serviceAccountName: 913536369768-compute@developer.gserviceaccount.com
+          containers:
+            - image: gcr.io/gen-lang-client-0262945179/laplace-batch
+              command: ["python"]
+              args: ["-m", "scripts.run_collectors"]
+
+              resources:
+                limits:
+                  cpu: 1000m
+                  memory: 512Mi
+
+              env:
+                - name: DB_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: DB_HOST
+                      key: latest
+                - name: DB_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: DB_USER
+                      key: latest
+                - name: DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: DB_PASSWORD
+                      key: latest
+                - name: DB_NAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: DB_NAME
+                      key: latest
+                - name: RAKUTEN_APP_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: RAKUTEN_APP_ID
+                      key: latest
+                - name: RAKUTEN_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: RAKUTEN_ACCESS_KEY
+                      key: latest
+
+          timeoutSeconds: 3600
+          maxRetries: 3

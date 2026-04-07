@@ -5,6 +5,9 @@ tools/
 __pycache__/
 *.pyc
 .env
+.env.local
 dump.sql
 tmp.txt
 test.py
+node_modules/
+.next/

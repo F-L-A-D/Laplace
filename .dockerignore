@@ -5,7 +5,10 @@ tools/
 __pycache__/
 *.pyc
 .env
+.env.local
 dump.sql
 .git/
 .gitignore
 test.py
+node_modules/
+.next/

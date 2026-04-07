@@ -19,7 +19,7 @@ steps:
       - |
         if gcloud run jobs describe laplace-job --region=asia-northeast1; then
           gcloud run jobs update laplace-job \
-            --image=gcr.io/$PROJECT_ID/laplace-batch \
+            --image=asia-northeast1-docker.pkg.dev/$PROJECT_ID/laplace-batch \
             --region=asia-northeast1 \
             --vpc-connector=laplace-connector \
             --vpc-egress=all \
@@ -29,7 +29,7 @@ steps:
             --args=-m,scripts.run_collectors
         else
           gcloud run jobs create laplace-job \
-            --image=gcr.io/$PROJECT_ID/laplace-batch \
+            --image=asia-northeast1-docker.pkg.dev/$PROJECT_ID/laplace-batch \
             --region=asia-northeast1 \
             --vpc-connector=laplace-connector \
             --vpc-egress=all \

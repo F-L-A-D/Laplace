@@ -1,13 +1,20 @@
+# Python
 venv/
-setup.py
-report.txt
-tools/
 __pycache__/
 *.pyc
+
+# Node
+node_modules/
+.next/
+
+# env
 .env
 .env.local
+
+# misc
+setup.py
+report.txt
 dump.sql
 tmp.txt
 test.py
-node_modules/
-.next/
+tools/

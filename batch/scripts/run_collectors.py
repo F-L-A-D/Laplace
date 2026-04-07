@@ -99,7 +99,7 @@ def _has_valid_price(hotel_results):
 # ------------------------
 # DB保存
 # ------------------------
-def save_data(hotel_results, collector):
+def save_data(hotel_results, should_save_review):
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -114,7 +114,7 @@ def save_data(hotel_results, collector):
                 (hotel_id, 1, d, p, status)
             )
 
-            if collector.get_review and review_avg is not None:
+            if should_save_review and review_avg is not None:
                 review_data.append(
                     (hotel_id, 1, review_avg, review_count)
                 )
@@ -143,6 +143,7 @@ def save_data(hotel_results, collector):
 # ------------------------
 def run_rakuten():
     start_time = time.time()
+    is_monday = datetime.today().weekday() == 0
 
     limiter = RateLimiter(MIN_INTERVAL)
     collector = RakutenCollector(limiter)
@@ -169,19 +170,20 @@ def run_rakuten():
         for checkin, checkout in date_pairs:
 
             print(f"--- {checkin} ---")
+            is_first_day = (offset == 1 and checkin == date_pairs[0][0])
+            should_get_review = is_monday and is_first_day
 
             for i in range(0, len(hotels), MAX_HOTELS):
                 batch = hotels[i:i+MAX_HOTELS]
 
                 print(f"=== HOTEL BATCH {i}-{i+len(batch)} ===")
 
-                price_map = collector.fetch_prices(batch, checkin, checkout)
+                price_map = collector.fetch_prices(batch, checkin, checkout, should_get_review)
 
                 if not price_map:
                     continue
 
                 hotel_results = {}
-                saved_reviews = set()
                 
                 for h in batch:
                     hotel_id = h["hotel_id"]
@@ -196,14 +198,10 @@ def run_rakuten():
                     if hotel_id not in hotel_results:
                         hotel_results[hotel_id] = []
 
-                    if hotel_id not in saved_reviews:
-                        hotel_results[hotel_id].append((checkin, price, review_avg, review_count))
-                        saved_reviews.add(hotel_id)
-                    else:
-                        hotel_results[hotel_id].append((checkin, price, None, None))
+                    hotel_results[hotel_id].append((checkin, price, review_avg, review_count))
 
                 if SAVE_DB and _has_valid_price(hotel_results):
-                    save_data(hotel_results, collector)
+                    save_data(hotel_results, should_get_review)
                 else:
                     print(f"=== SKIP INSERT: {checkin} ===")
 

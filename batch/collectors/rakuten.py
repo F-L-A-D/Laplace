@@ -18,7 +18,6 @@ class RakutenCollector(DataCollector):
         self.session = requests.Session()
         self.limiter = limiter
 
-        self.get_review = datetime.today().weekday() == 0
         self.success = 0
         self.limit_hit = 0
         self.lock = threading.Lock()
@@ -45,8 +44,9 @@ class RakutenCollector(DataCollector):
             "accessKey": os.getenv("RAKUTEN_ACCESS_KEY")
         }
 
-    def fetch_prices(self, hotels, checkin, checkout):
+    def fetch_prices(self, hotels, checkin, checkout, get_review=False):
         self.limiter.wait()
+        self.current_get_review = get_review
 
         params = self.build_params(checkin, checkout, hotels)
 
@@ -105,7 +105,7 @@ class RakutenCollector(DataCollector):
             
             price = min(prices) if prices else None
 
-            if self.get_review:
+            if self.current_get_review:
                 review_avg = basic.get("reviewAverage")
                 review_count = basic.get("reviewCount")
             else:

@@ -58,9 +58,9 @@ def get_target_days():
     if today == 0:
         return 180
     elif today in [1, 3, 5]:
-        return 90
+        return 120
     else:
-        return 60
+        return 90
 
 
 # ------------------------

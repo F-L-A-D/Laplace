@@ -11,7 +11,7 @@ spec:
           containers:
             - image: gcr.io/gen-lang-client-0262945179/laplace-batch
               command: ["python"]
-              args: ["-m", "scripts.run_collectors"]
+              args: ["-m", "jobs.main"]
 
               resources:
                 limits:

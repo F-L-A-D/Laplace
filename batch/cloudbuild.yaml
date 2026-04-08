@@ -26,7 +26,7 @@ steps:
             --command=python \
             --task-timeout=3600 \
             --set-secrets=DB_HOST=DB_HOST:latest,DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest,DB_NAME=DB_NAME:latest,RAKUTEN_APP_ID=RAKUTEN_APP_ID:latest,RAKUTEN_ACCESS_KEY=RAKUTEN_ACCESS_KEY:latest \
-            --args=-m,scripts.run_collectors
+            --args=-m,jobs.main
         else
           gcloud run jobs create laplace-job \
             --image=gcr.io/$PROJECT_ID/laplace-batch \
@@ -36,7 +36,7 @@ steps:
             --command=python \
             --task-timeout=3600 \
             --set-secrets=DB_HOST=DB_HOST:latest,DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest,DB_NAME=DB_NAME:latest,RAKUTEN_APP_ID=RAKUTEN_APP_ID:latest,RAKUTEN_ACCESS_KEY=RAKUTEN_ACCESS_KEY:latest \
-            --args=-m,scripts.run_collectors
+            --args=-m,jobs.main
         fi
 
 options:

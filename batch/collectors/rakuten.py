@@ -3,7 +3,6 @@
 from collectors.base import DataCollector
 import requests
 import os
-from datetime import datetime
 from dotenv import load_dotenv
 import random
 import time
@@ -44,9 +43,8 @@ class RakutenCollector(DataCollector):
             "accessKey": os.getenv("RAKUTEN_ACCESS_KEY")
         }
 
-    def fetch_prices(self, hotels, checkin, checkout, get_review=False):
+    def fetch_prices(self, hotels, checkin, checkout, fetch_review=False):
         self.limiter.wait()
-        self.current_get_review = get_review
 
         params = self.build_params(checkin, checkout, hotels)
 
@@ -58,7 +56,7 @@ class RakutenCollector(DataCollector):
                     data = res.json()
                     with self.lock:
                         self.success += 1
-                    return self._parse_response(data)
+                    return self._parse_response(data, fetch_review)
                 
                 elif res.status_code == 403:
                     print(f"403 Rate Limit Hit. Checkin: {checkin}")
@@ -80,7 +78,7 @@ class RakutenCollector(DataCollector):
 
         return {}
 
-    def _parse_response(self, data):
+    def _parse_response(self, data, fetch_review=False):
         result = {}
         hotels = data.get("hotels", [])
 
@@ -105,7 +103,7 @@ class RakutenCollector(DataCollector):
             
             price = min(prices) if prices else None
 
-            if self.current_get_review:
+            if fetch_review:
                 review_avg = basic.get("reviewAverage")
                 review_count = basic.get("reviewCount")
             else:

@@ -77,8 +77,8 @@ export default function SoldOutTable({
         <thead>
           <tr>
             <th style={{ width: NAME_WIDTH }}>Hotel</th>
-            <th style={{ width: 80 }}>Rate</th>
-            <th style={{ width: 80 }}>Days</th>
+            <th style={{ width: 60 }}>Rate</th>
+            <th style={{ width: 60 }}>Days</th>
           </tr>
         </thead>
 

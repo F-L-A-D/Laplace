@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 type Props = {
   year: string;
@@ -16,11 +16,31 @@ export default function YearMonthSelector({
   setMonth
 }: Props) {
   const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
 
   const years = ["2025", "2026", "2027"];
   const months = Array.from({ length: 12 }, (_, i) =>
     String(i + 1).padStart(2, "0")
   );
+
+  // ------------------------
+  // 外クリックで閉じる
+  // ------------------------
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!ref.current) return;
+
+      if (!ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // ------------------------
   // 前月
@@ -57,106 +77,99 @@ export default function YearMonthSelector({
   };
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-      {/* ← */}
+    <div ref={ref} style={{ position: "relative" }}>
+      {/* ===== 一体コントロール ===== */}
       <div
-        onClick={prevMonth}
         style={{
-          cursor: "pointer",
-          padding: "4px 6px",
-          border: "1px solid #ccc",
-          borderRadius: "6px",
-          background: "#fff"
+          display: "flex",
+          alignItems: "center",
+          borderRadius: "8px",
+          background: "#f3f4f6",
+          overflow: "hidden",
+          fontSize: "14px"
         }}
       >
-        ◀
-      </div>
-
-      {/* 中央 */}
-      <div style={{ position: "relative" }}>
-        <div
-          onClick={() => setOpen(!open)}
-          style={{
-            border: "1px solid #ccc",
-            borderRadius: "6px",
-            padding: "6px 10px",
-            fontSize: "14px",
-            cursor: "pointer",
-            background: "#fff",
-            minWidth: "120px",
-            textAlign: "center",
-            fontWeight: "bold"
-          }}
-        >
-          {year} / {month} ▼
+        {/* ← */}
+        <div onClick={prevMonth} style={arrowStyle}>
+          ‹
         </div>
 
-        {/* ドロップダウン */}
-        {open && (
-          <div
-            style={{
-              position: "absolute",
-              top: "110%",
-              left: 0,
-              border: "1px solid #ccc",
-              borderRadius: "6px",
-              background: "#fff",
-              padding: "10px",
-              display: "flex",
-              gap: "16px",
-              zIndex: 20
-            }}
-          >
-            {/* 年 */}
-            <div>
-              {years.map(y => (
-                <div
-                  key={y}
-                  onClick={() => setYear(y)}
-                  style={{
-                    padding: "6px 10px",
-                    cursor: "pointer",
-                    background: y === year ? "#eee" : "transparent"
-                  }}
-                >
-                  {y}
-                </div>
-              ))}
-            </div>
+        {/* 中央 */}
+        <div
+          onClick={() => setOpen(v => !v)}
+          style={{
+            padding: "6px 12px",
+            cursor: "pointer",
+            fontWeight: 500
+          }}
+        >
+          {year}.{month}
+        </div>
 
-            {/* 月 */}
-            <div>
-              {months.map(m => (
-                <div
-                  key={m}
-                  onClick={() => setMonth(m)}
-                  style={{
-                    padding: "6px 10px",
-                    cursor: "pointer",
-                    background: m === month ? "#eee" : "transparent"
-                  }}
-                >
-                  {m}
-                </div>
-              ))}
-            </div>
+        {/* → */}
+        <div onClick={nextMonth} style={arrowStyle}>
+          ›
+        </div>
+      </div>
+
+      {/* ===== ドロップダウン ===== */}
+      {open && (
+        <div
+          style={{
+            position: "absolute",
+            top: "110%",
+            left: 0,
+            background: "#fff",
+            border: "1px solid #eee",
+            borderRadius: "8px",
+            padding: "10px",
+            display: "flex",
+            gap: "16px",
+            boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
+            zIndex: 20
+          }}
+        >
+          {/* 年 */}
+          <div>
+            {years.map(y => (
+              <div
+                key={y}
+                onClick={() => setYear(y)}
+                style={itemStyle(y === year)}
+              >
+                {y}
+              </div>
+            ))}
           </div>
-        )}
-      </div>
 
-      {/* → */}
-      <div
-        onClick={nextMonth}
-        style={{
-          cursor: "pointer",
-          padding: "4px 6px",
-          border: "1px solid #ccc",
-          borderRadius: "6px",
-          background: "#fff"
-        }}
-      >
-        ▶
-      </div>
+          {/* 月 */}
+          <div>
+            {months.map(m => (
+              <div
+                key={m}
+                onClick={() => setMonth(m)}
+                style={itemStyle(m === month)}
+              >
+                {m}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+// ------------------------
+const arrowStyle: React.CSSProperties = {
+  padding: "6px 8px",
+  cursor: "pointer",
+  opacity: 0.6
+};
+
+const itemStyle = (active: boolean): React.CSSProperties => ({
+  padding: "6px 10px",
+  cursor: "pointer",
+  borderRadius: "4px",
+  background: active ? "#f3f4f6" : "transparent"
+});

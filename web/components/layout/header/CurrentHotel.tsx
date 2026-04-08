@@ -12,14 +12,30 @@ export default function CurrentHotel({ baseHotel, hotelMap, onClick }: Props) {
   return (
     <div
       onClick={onClick}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.opacity = "0.7";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.opacity = "1";
+      }}        
       style={{
-        fontSize: "20px",
+        fontSize: "14px",
+        fontWeight: 500,
+        color: "#333",
         display: "flex",
         alignItems: "center",
-        cursor: "pointer"
+        gap: "6px",
+        cursor: "pointer",
+        transition: "opacity 0.15s ease"
       }}
     >
-      {hotelMap[baseHotel]}
+      <span style={{ color: "#999", marginRight: "6px" }}>
+        HOTEL
+      </span>
+      
+      <span>
+        {hotelMap[baseHotel]}
+      </span>
     </div>
   );
 }

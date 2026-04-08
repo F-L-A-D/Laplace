@@ -89,8 +89,6 @@ export default function Home() {
 
   if (baseHotel === null) return <div>Loading...</div>;
 
-  const sidebarWidth = isOpen ? 200 : 30;
-
   return (
     <div
       style={{
@@ -118,6 +116,8 @@ export default function Home() {
           setMonth={setMonth}
           baseHotel={baseHotel}
           hotelMap={hotelMap}
+          isOpen={isOpen}
+          menu={menu}
           setIsOpen={setIsOpen}
           setMenu={setMenu}
         />
@@ -160,7 +160,19 @@ export default function Home() {
               }}
             >
               {/* ===== Layer1（今は固定高さ） ===== */}
-              <div style={{ flex: "0 0 600px" }}>
+              <div style={{ 
+                flex: "0 0 600px",
+                borderBottom: "1px solid #e5e7eb",
+                paddingBottom: "16px"
+              }}>
+              <div style={{ 
+                marginBottom: "8px", 
+                fontSize: "11px", 
+                color: "#999", 
+                letterSpacing: "0.05em" 
+              }}>
+                LAYER 1 / ACT
+              </div>
                 <Layer1
                   data={data}
                   selected={normalizedSelected}

@@ -11,11 +11,25 @@ export default function ReviewTable({ selected, hotelMap, baseHotel }: any) {
   const [data, setData] = useState<any>({});
 
   useEffect(() => {
-    if (!selected.length) return;
+    if (!selected.length) {
+      setData({});
+      return;
+    }
 
     fetch(`/api/reviews?hotel_ids=${selected.join(",")}`)
       .then(res => res.json())
-      .then(setData);
+      .then((rows) => {
+        const map: Record<number, any> = {};
+
+        rows.forEach((r: any) => {
+          map[r.hotel_id] = {
+            score: r.score,
+            review_count: r.review_count
+          };
+        });
+
+        setData(map);
+      });
   }, [selected]);
 
   const ordered = useMemo(() => {
@@ -35,7 +49,7 @@ export default function ReviewTable({ selected, hotelMap, baseHotel }: any) {
 
   return (
     <>
-      <SectionTitle title="REVIEWS" />
+      <SectionTitle title="RAKUTEN REVIEWS" />
       <table
         style={{
           borderCollapse: "collapse",
@@ -46,8 +60,8 @@ export default function ReviewTable({ selected, hotelMap, baseHotel }: any) {
         <thead>
           <tr>
             <th style={{ width: NAME_WIDTH }}>Hotel</th>
-            <th style={{ width: 80 }}>Score</th>
-            <th style={{ width: 80 }}>Count</th>
+            <th style={{ width: 60 }}>Score</th>
+            <th style={{ width: 60 }}>Count</th>
           </tr>
         </thead>
 
@@ -81,7 +95,7 @@ export default function ReviewTable({ selected, hotelMap, baseHotel }: any) {
                 </td>
 
                 <td style={{ textAlign: "center" }}>
-                  {data[id]?.count ?? "-"}
+                  {data[id]?.review_count ?? "-"}
                 </td>
               </tr>
             );

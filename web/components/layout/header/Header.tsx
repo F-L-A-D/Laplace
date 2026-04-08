@@ -1,7 +1,9 @@
 "use client";
 
-import YearMonthSelector from "./YearMonthSelector";
-import CurrentHotel from "./CurrentHotel";
+import YearMonthSelector from "@/components/layout/header/YearMonthSelector";
+import CurrentHotel from "@/components/layout/header/CurrentHotel";
+
+type MenuType = "base" | "select" | null;
 
 type Props = {
   year: string;
@@ -10,8 +12,10 @@ type Props = {
   setMonth: (v: string) => void;
   baseHotel: number | null;
   hotelMap: Record<number, string>;
+  isOpen: boolean;
+  menu: MenuType;
   setIsOpen: (v: boolean) => void;
-  setMenu: (v: "base" | "select" | null) => void;
+  setMenu: (v: MenuType) => void;
 };
 
 export default function Header({
@@ -21,46 +25,53 @@ export default function Header({
   setMonth,
   baseHotel,
   hotelMap,
+  isOpen,
+  menu,
   setIsOpen,
   setMenu
 }: Props) {
+
+  const toggleMenu = (target: Exclude<MenuType, null>) => {
+    if (isOpen && menu === target) {
+      setMenu(null);
+      setIsOpen(false);
+    } else {
+      setMenu(target);
+      setIsOpen(true);
+    }
+  };
+
   return (
     <div
       style={{
         height: "56px",
-        width: "100%",
         display: "flex",
         alignItems: "center",
         padding: "0 16px",
-        borderBottom: "1px solid #ddd",
+        borderBottom: "1px solid #eee",
         background: "#fff",
         position: "sticky",
         top: 0,
         zIndex: 10
       }}
     >
-      {/* 左：タイトル */}
-      <div style={{ fontSize: "16px", fontWeight: "600", letterSpacing: "0.5px", color: "#222" }}>
-        Laplace 
+      {/* 左ブロック */}
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <div style={{ fontWeight: 600, color: "#111" }}>
+          Laplace
+        </div>
+
+        <div style={{ margin: "0 12px", color: "#ccc" }}>|</div>
+
+        <CurrentHotel
+          baseHotel={baseHotel}
+          hotelMap={hotelMap}
+          onClick={() => toggleMenu("base")}
+        />
       </div>
 
-      {/* 中央：自社ホテル */}
-      <div style={{ marginLeft: "24px", display: "flex", alignItems: "center", height: "100%" }}>
-        <div>
-          <CurrentHotel 
-            baseHotel={baseHotel} 
-            hotelMap={hotelMap}
-            onClick={() => {
-              setIsOpen(true);
-              setMenu("base");
-            }} 
-          />
-        </div>        
-
-      </div>
-
-      {/* 右：年月 */}
-      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", height: "100%"  }}>
+      {/* 右ブロック */}
+      <div style={{ marginLeft: "auto" }}>
         <YearMonthSelector
           year={year}
           month={month}

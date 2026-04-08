@@ -9,13 +9,15 @@ type Props = {
   selected: number[];
   baseHotel: number;
   hotelMap: Record<number, string>;
+  setSelected: (v: number[]) => void;
 };
 
 export default function Layer1({
   data,
   selected,
   baseHotel,
-  hotelMap
+  hotelMap,
+  setSelected
 }: Props) {
   return (
     <div
@@ -42,6 +44,7 @@ export default function Layer1({
           selected={selected}
           baseHotel={baseHotel}
           hotelMap={hotelMap}
+          setSelected={setSelected}
         />
       </div>
 

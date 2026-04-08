@@ -166,6 +166,7 @@ export default function Home() {
                   selected={normalizedSelected}
                   baseHotel={baseHotel}
                   hotelMap={hotelMap}
+                  setSelected={setSelected}
                 />
               </div>
 

@@ -2,21 +2,23 @@
 
 from repositories.price_repo import fetch_prices_latest
 from utils.transform import group_by_date
+from utils.config import DEBUG
 from services.build_features import calc_features
 from writers.db_writer import save_features
 import pandas as pd
 
-from datetime import datetime
-
-def run():
+def run(collected_at):
     print("[BUILD FEATURES]")
-    collected_at = datetime.now() #本来は上流から渡す
-    
-    rows = fetch_prices_latest(source_id = 1)
+    rows = fetch_prices_latest(source_id=1)
     grouped = group_by_date(rows)
     features = calc_features(grouped)
     df = pd.DataFrame(features)
 
+    if DEBUG:
+        print("[DEBUG DATA] FEATURES")
+        print(df.head(10))
+        return
+    
     save_features(df.to_dict("records"), collected_at, source_id=1)
     print("[SAVED FEATURES]")
     

@@ -8,16 +8,17 @@ from datetime import datetime
 
 def run():
     is_monday = datetime.today().weekday() == 0
+    collected_at = datetime.now() 
     data = run_rakuten()
 
     if DEBUG:
         print(data)
         return
     
-    save_prices(data)
+    save_prices(data, collected_at)
 
     if is_monday:
-        save_reviews(data)
+        save_reviews(data, collected_at)
 
 if __name__ == "__main__":
     run()

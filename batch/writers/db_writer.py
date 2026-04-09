@@ -2,7 +2,7 @@
 
 from lib.db import get_connection
 
-def save_prices(hotel_results):
+def save_prices(hotel_results, collected_at):
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -16,19 +16,19 @@ def save_prices(hotel_results):
             status = "available" if p is not None else "sold_out"
 
             price_data.append(
-                (hotel_id, 1, d, p, status)
+                (hotel_id, 1, d, p, status, collected_at)
             )
 
     if price_data:
         cursor.executemany("""
         INSERT INTO prices (hotel_id, source_id, date, price, status, collected_at)
-        VALUES (%s, %s, %s, %s, %s, NOW())
+        VALUES (%s, %s, %s, %s, %s, %s)
         """, price_data)
 
     conn.commit()
     conn.close()
 
-def save_reviews(hotel_results):
+def save_reviews(hotel_results, collected_at):
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -42,19 +42,19 @@ def save_reviews(hotel_results):
                         hotel_id,
                         1,
                         row["review_avg"],
-                        row["review_count"]
+                        row["review_count"],
+                        collected_at
                     )
                 )
                 break
 
     if review_data:
         cursor.executemany("""
-        INSERT INTO reviews (hotel_id, source_id, score, review_count)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO reviews (hotel_id, source_id, score, review_count, collected_at)
+        VALUES (%s, %s, %s, %s, %s)
         ON DUPLICATE KEY UPDATE
             score = VALUES(score),
-            review_count = VALUES(review_count),
-            collected_at = NOW()
+            review_count = VALUES(review_count)
         """, review_data)
 
     conn.commit()

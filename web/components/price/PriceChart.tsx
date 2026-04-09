@@ -1,3 +1,5 @@
+// web/components/price/PriceChart.tsx
+
 "use client";
 
 import {

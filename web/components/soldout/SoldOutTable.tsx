@@ -1,3 +1,5 @@
+// web/components/soldout/SoldOuteTable.tsx
+
 "use client";
 
 import { useMemo } from "react";

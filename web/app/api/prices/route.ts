@@ -1,5 +1,8 @@
-import { db } from "@/lib/db";
+// web/app/api/prices/route.ts
+
+import { query } from "@/lib/db";
 import { RowDataPacket } from "mysql2";
+import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -13,7 +16,7 @@ export async function GET(req: Request) {
   const ids = hotelIds.split(",").map(Number);
   const placeholders = ids.map(() => "?").join(",");
 
-  const [rows] = await db.query(
+  const rows = await query(
     `
     SELECT p.hotel_id, p.date, p.price
     FROM prices p
@@ -31,5 +34,5 @@ export async function GET(req: Request) {
     [...ids, start, end]
   ) as [RowDataPacket[], any];
 
-  return Response.json(rows);
+  return NextResponse.json(rows);
 }

@@ -1,4 +1,7 @@
-import { db } from "@/lib/db";
+// web/app/api/reviews/route.ts
+
+import { query } from "@/lib/db";
+import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -9,7 +12,7 @@ export async function GET(req: Request) {
   const ids = hotel_ids.split(",").map(id => Number(id));
   const placeholders = ids.map(() => "?").join(",");
 
-  const [rows] = await db.query(
+  const rows = await query(
     `
     SELECT r.hotel_id, r.score, r.review_count
     FROM reviews r
@@ -25,5 +28,5 @@ export async function GET(req: Request) {
     ids
   );
 
-  return Response.json(rows);
+  return NextResponse.json(rows);
 }

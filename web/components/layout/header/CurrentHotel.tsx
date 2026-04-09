@@ -30,7 +30,7 @@ export default function CurrentHotel({ baseHotel, hotelMap, onClick }: Props) {
       }}
     >
       <span style={{ color: "#999", marginRight: "6px" }}>
-        HOTEL
+        SELECTED HOTEL
       </span>
       
       <span>

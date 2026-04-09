@@ -1,4 +1,4 @@
-#batch/jobs/fetch.py
+#batch/jobs/fetch_prices.py
 
 from services.fetch_rakuten import run_rakuten
 from writers.db_writer import save_prices, save_reviews
@@ -25,4 +25,4 @@ def run(collected_at):
         print("[SAVED REVIEWS]")
 
 if __name__ == "__main__":
-    run()
+    run(datetime.now())

@@ -7,6 +7,8 @@ from services.build_features import calc_features
 from writers.db_writer import save_features
 import pandas as pd
 
+from datetime import datetime
+
 def run(collected_at):
     print("[BUILD FEATURES]")
     rows = fetch_prices_latest(source_id=1)
@@ -25,4 +27,4 @@ def run(collected_at):
     return
 
 if __name__ == "__main__":
-    run()
+    run(datetime.now())

@@ -12,6 +12,8 @@ type Props = {
   baseHotel: number;
   hotelMap: Record<number, string>;
   setSelected: (v: number[]) => void;
+  pinnedIds: number[];
+  setPinnedIds: (v: number[]) => void
 };
 
 export default function Layer1({
@@ -19,7 +21,9 @@ export default function Layer1({
   selected,
   baseHotel,
   hotelMap,
-  setSelected
+  setSelected,
+  pinnedIds,
+  setPinnedIds
 }: Props) {
   return (
     <div
@@ -47,6 +51,8 @@ export default function Layer1({
           baseHotel={baseHotel}
           hotelMap={hotelMap}
           setSelected={setSelected}
+          pinnedIds={pinnedIds}
+          setPinnedIds={setPinnedIds}
         />
       </div>
 

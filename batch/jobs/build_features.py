@@ -5,8 +5,8 @@ from utils.transform import group_by_date
 from utils.config import DEBUG
 from services.build_features import calc_features
 from writers.db_writer import save_features
-import pandas as pd
 
+import pandas as pd
 from datetime import datetime
 
 def run(collected_at):

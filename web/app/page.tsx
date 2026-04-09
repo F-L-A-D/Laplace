@@ -1,92 +1,54 @@
+// web/app/page.tsx
+
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useState } from "react";
+
+import { useHotels } from "@/hooks/useHotels";
+import { usePrices } from "@/hooks/usePrices";
+import { useNormalizedSelected } from "@/hooks/useNormalizedSelected";
+import { useRateMatrix } from "@/hooks/useRateMatrix";
+
 import Header from "@/components/layout/header/Header";
 import Sidebar from "@/components/layout/sidebar/Sidebar";
 import SidebarMenu from "@/components/layout/sidebar/SidebarMenu";
-import Layer1 from "@/components/layers/Layer1";
+import Layer1 from "@/components/views/Layer1";
+import Layer2 from "@/components/views/Layer2";
 
 export default function Home() {
-  const [data, setData] = useState<any[]>([]);
-  const [hotels, setHotels] = useState<any[]>([]);
-  const [selected, setSelected] = useState<number[]>([]);
-  const [baseHotel, setBaseHotel] = useState<number | null>(null);
-  const [hotelMap, setHotelMap] = useState<Record<number, string>>({});
+  const [pinnedIds, setPinnedIds] = useState<number[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [menu, setMenu] = useState<"base" | "select" | null>(null);
 
   const [year, setYear] = useState("2026");
   const [month, setMonth] = useState("04");
 
-  // ------------------------
-  // ホテル取得
-  // ------------------------
-  useEffect(() => {
-    fetch("/api/hotels")
-      .then(res => res.json())
-      .then(list => {
-        list.sort((a: any, b: any) =>
-          a.name.localeCompare(b.name, "en")
-        );
+  const {
+    hotels,
+    hotelMap,
+    selected,
+    setSelected,
+    baseHotel,
+    setBaseHotel
+  } = useHotels();
 
-        setHotels(list);
+  const disPlaySelected = useNormalizedSelected(
+    selected,
+    baseHotel
+  );
 
-        const map: Record<number, string> = {};
-        list.forEach((h: any) => (map[h.id] = h.name));
-        setHotelMap(map);
+  const data = usePrices(
+    disPlaySelected,
+    year,
+    month
+  );
 
-        const ids = list.slice(0, 3).map((h: any) => h.id);
-        setSelected(ids);
-        setBaseHotel(ids[0]);
-      });
-  }, []);
-
-  // ------------------------
-  // 自社強制表示
-  // ------------------------
-  const normalizedSelected = useMemo(() => {
-    if (!baseHotel) return selected;
-    return selected.includes(baseHotel)
-      ? selected
-      : [baseHotel, ...selected];
-  }, [selected, baseHotel]);
-
-  // ------------------------
-  // 価格取得
-  // ------------------------
-  useEffect(() => {
-    if (!normalizedSelected.length) return;
-
-    const lastDay = new Date(
-      Number(year),
-      Number(month),
-      0
-    ).getDate();
-
-    const start = `${year}-${month}-01`;
-    const end = `${year}-${month}-${String(lastDay).padStart(2, "0")}`;
-
-    fetch(
-      `/api/prices?hotel_ids=${normalizedSelected.join(
-        ","
-      )}&start_date=${start}&end_date=${end}`
-    )
-      .then(res => res.json())
-      .then(json => {
-        const grouped: any = {};
-
-        json.forEach((r: any) => {
-          const date = r.date.slice(0, 10);
-
-          if (!grouped[date]) grouped[date] = { date };
-
-          grouped[date][`hotel_${r.hotel_id}`] = r.price;
-        });
-
-        setData(Object.values(grouped));
-      });
-  }, [normalizedSelected, year, month]);
-
+  const rateMatrix = useRateMatrix(
+    selected,
+    year,
+    month
+  );
+  
   if (baseHotel === null) return <div>Loading...</div>;
 
   return (
@@ -165,29 +127,47 @@ export default function Home() {
                 borderBottom: "1px solid #e5e7eb",
                 paddingBottom: "16px"
               }}>
+                <div style={{ 
+                  marginBottom: "8px", 
+                  fontSize: "11px", 
+                  color: "#999", 
+                  letterSpacing: "0.05em" 
+                }}>
+                  LAYER 1 / ACT
+                </div>
+                  <Layer1
+                    data={data}
+                    selected={disPlaySelected}
+                    baseHotel={baseHotel}
+                    hotelMap={hotelMap}
+                    setSelected={setSelected}
+                    pinnedIds={pinnedIds}
+                    setPinnedIds={setPinnedIds}
+                  />
+              </div>
+              {/* ===== Layer2 ===== */}
               <div style={{ 
-                marginBottom: "8px", 
-                fontSize: "11px", 
-                color: "#999", 
-                letterSpacing: "0.05em" 
+                flex: "0 0 600px",
+                borderBottom: "1px solid #e5e7eb",
+                paddingBottom: "16px"
               }}>
-                LAYER 1 / ACT
+                <div style={{ 
+                  marginBottom: "8px", 
+                  fontSize: "11px", 
+                  color: "#999", 
+                  letterSpacing: "0.05em" 
+                }}>
+                  LAYER 2 / SO WHAT
+                </div>
+                  <Layer2 
+                    rateMatrix={rateMatrix}
+                    selected={selected}
+                    baseHotel={baseHotel}
+                    hotelMap={hotelMap}
+                    year={year}
+                    month={month}
+                  />
               </div>
-                <Layer1
-                  data={data}
-                  selected={normalizedSelected}
-                  baseHotel={baseHotel}
-                  hotelMap={hotelMap}
-                  setSelected={setSelected}
-                />
-              </div>
-
-              {/* 将来ここにLayer2追加 */}
-              {/*
-              <div style={{ flex: 1, minHeight: 0 }}>
-                <Layer2 ... />
-              </div>
-              */}
             </div>
           </div>
         </div>

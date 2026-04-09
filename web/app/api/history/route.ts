@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { query } from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 
 export async function GET(req: Request) {
@@ -10,7 +10,7 @@ export async function GET(req: Request) {
   const ids = hotelIds.split(",").map(Number);
   const placeholders = ids.map(() => "?").join(",");
 
-  const [rows] = await db.query(
+  const [rows] = await query(
     `
     SELECT p.hotel_id, p.date, p.collected_at, p.price
     FROM prices p

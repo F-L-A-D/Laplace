@@ -59,3 +59,63 @@ def save_reviews(hotel_results, collected_at):
 
     conn.commit()
     conn.close()
+
+def save_features(features, collected_at, source_id=1):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    data = []
+
+    for row in features:
+        data.append((
+            row["hotel_id"],
+            source_id,
+            row["date"],
+            row["price"],
+
+            row["market_median"],
+            row["market_median_diff"],
+            
+            row["price_rank"],
+            row["percentile"],
+            row["z_score"],
+
+            row["hotel_median"],
+            row["hotel_median_diff"],
+
+            row["score"],
+            collected_at
+        ))
+
+    if data:
+        cursor.executemany("""
+        INSERT INTO features (
+            hotel_id,
+            source_id,
+            date,
+            price,
+
+            market_median,
+            market_median_diff,
+                           
+            price_rank,
+            percentile,
+            z_score,
+
+            hotel_median,
+            hotel_median_diff,
+
+            score,
+            collected_at
+        )
+        VALUES (
+            %s, %s, %s, %s,
+            %s, %s, %s, %s, %s,
+            %s, %s,
+            %s,
+            %s
+        )
+        """, data)
+
+    conn.commit()
+    conn.close()

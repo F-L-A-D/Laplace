@@ -1,5 +1,7 @@
 #batch/utils/transform.py
 
+from collections import defaultdict
+
 def build_hotel_results(batch, price_map, checkin):
     result = {}
 
@@ -21,3 +23,11 @@ def build_hotel_results(batch, price_map, checkin):
 def merge(dest, src):
     for k, v in src.items():
         dest.setdefault(k, []).extend(v)
+
+def group_by_date(rows):
+    grouped = defaultdict(list)
+
+    for r in rows:
+        grouped[r["date"]].append(r)
+
+    return grouped

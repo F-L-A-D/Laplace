@@ -51,7 +51,6 @@ export default function Layer1({
           data={data}
           baseHotel={baseHotel}
           hotelMap={hotelMap}
-          selected={selected}
           displaySelected={displaySelected}
           setSelected={setSelected}
           pinnedIds={pinnedIds}
@@ -73,7 +72,6 @@ export default function Layer1({
       >
         <div style={{ flex: 0.8, overflow: "auto" }}>
           <ReviewTable
-            data={data}
             displaySelected={displaySelected}
             hotelMap={hotelMap}
             baseHotel={baseHotel}

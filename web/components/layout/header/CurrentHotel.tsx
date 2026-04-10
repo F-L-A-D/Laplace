@@ -1,39 +1,28 @@
 "use client";
 
+import * as s from "@/components/layout/header/currentHotel.styles"
+
 type Props = {
   baseHotel: number | null;
   hotelMap: Record<number, string>;
   onClick?: () => void;
 };
 
-export default function CurrentHotel({ baseHotel, hotelMap, onClick }: Props) {
+export default function CurrentHotel({
+  baseHotel,
+  hotelMap,
+  onClick
+}: Props) {
   if (!baseHotel) return null;
 
   return (
     <div
       onClick={onClick}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.opacity = "0.7";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.opacity = "1";
-      }}        
-      style={{
-        fontSize: "14px",
-        fontWeight: 500,
-        color: "#333",
-        display: "flex",
-        alignItems: "center",
-        gap: "6px",
-        cursor: "pointer",
-        transition: "opacity 0.15s ease"
-      }}
+      style={s.wrap}
     >
-      <span style={{ color: "#999", marginRight: "6px" }}>
-        SELECTED HOTEL
-      </span>
-      
-      <span>
+      <span style={s.label}>BASE</span>
+
+      <span style={s.name}>
         {hotelMap[baseHotel]}
       </span>
     </div>

@@ -82,7 +82,5 @@ export function useRateMatrix(
       });
   }, [selected, year, month]);
 
-  console.log(matrix);
-
   return matrix;
 }

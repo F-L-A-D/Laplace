@@ -33,6 +33,9 @@ export default function ReviewTable({
     return buildReviewRows(sorted, reviewData);
   }, [sorted, reviewData]);
 
+  console.log("sorted", sorted);
+  console.log("rows", rows);
+
   return (
     <>
       <SectionTitle title="RAKUTEN REVIEWS" />
@@ -48,9 +51,11 @@ export default function ReviewTable({
 
         <tbody>
           {rows.map((r, i) => {
-            if (!r.id) {
+            const key = r.id != null ? `row-${r.id}` : `empty-${i}`;
+
+            if (r.id == null) {
               return (
-                <tr key={i}>
+                <tr key={key}>
                   <td style={tdCenter}>-</td>
                   <td style={tdCenter}>-</td>
                   <td style={tdCenter}>-</td>
@@ -58,11 +63,9 @@ export default function ReviewTable({
               );
             }
 
-            const isBase = r.id === baseHotel;
-
             return (
               <tr
-                key={r.id}
+                key={key}
                 style={{
                   background: getRowBg(r.id, baseHotel, pinnedIds)
                 }}

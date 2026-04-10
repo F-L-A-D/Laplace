@@ -1,9 +1,9 @@
 export function buildRows(
   payload: any[],
-  selected: number[],
+  displaySelected: number[],
   baseHotel: number
 ) {
-  const rows = selected.map((id: number) => {
+  const rows = displaySelected.map((id: number) => {
     const key = `hotel_${id}`;
     const entry = payload?.find((p: any) => p.dataKey === key);
 

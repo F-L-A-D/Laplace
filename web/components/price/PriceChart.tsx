@@ -36,7 +36,6 @@ type Props = {
   data: any[];
   baseHotel: number;
   hotelMap: Record<number, string>;
-  selected: number[];
   displaySelected: number[];
   setSelected: React.Dispatch<React.SetStateAction<number[]>>;
   pinnedIds: number[];
@@ -47,7 +46,6 @@ export default function PriceChart({
   data,
   baseHotel,
   hotelMap,
-  selected,
   displaySelected,
   setSelected,
   pinnedIds,
@@ -116,7 +114,7 @@ export default function PriceChart({
               content={(props) => (
                 <PriceTooltip
                   {...props}
-                  selected={selected}
+                  displaySelected={displaySelected}
                   baseHotel={baseHotel}
                   hotelMap={hotelMap}
                   pinnedIds={pinnedIds}
@@ -130,7 +128,7 @@ export default function PriceChart({
                   {...props}
                   baseHotel={baseHotel}
                   data={data}
-                  selected={selected}
+                  displaySelected={displaySelected}
                   hoveredId={hoveredId}
                   setHoveredId={setHoveredId}
                   pinnedIds={pinnedIds}

@@ -9,8 +9,9 @@ export function useNormalizedSelected(
   return useMemo(() => {
     if (!baseHotel) return selected;
 
-    return selected.includes(baseHotel)
-      ? selected
-      : [baseHotel, ...selected];
+    const unique = Array.from(new Set(selected));
+    const rest = unique.filter(id => id !== baseHotel);
+
+    return [baseHotel, ...rest];
   }, [selected, baseHotel]);
 }

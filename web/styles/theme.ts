@@ -21,6 +21,7 @@ export const COLORS = {
   border: {
     base: "#111",
     pinned: THEME.primary,
+    subtle: "#e5e7eb",
     default: "transparent"
   },
   bg:{

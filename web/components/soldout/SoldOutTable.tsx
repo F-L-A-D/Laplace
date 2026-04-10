@@ -65,10 +65,11 @@ export default function SoldOutTable({
 
         <tbody>
           {rows.map((r, i) => {
+            const key = r.id != null ? `row-${r.id}` : `empty-${i}`;
 
             if (r.id == null) {
               return (
-                <tr key={i}>
+                <tr key={key}>
                   <td style={tdCenter}>-</td>
                   <td style={tdCenter}>-</td>
                   <td style={tdCenter}>-</td>
@@ -76,11 +77,9 @@ export default function SoldOutTable({
               );
             }
 
-            const isBase = r.id === baseHotel;
-
             return (
               <tr
-                key={r.id}
+                key={key}
                 style={{
                   background: getRowBg(r.id, baseHotel, pinnedIds)
                 }}

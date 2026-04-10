@@ -30,15 +30,18 @@ export function reorderPinned(
 export function sortHotels(
   selected: number[],
   baseHotel: number,
-  pinnedIds: number[]
+  pinnedIds: number[] = []
 ) {
+  const selectedSet = new Set(selected);
+  const pinned = pinnedIds.filter(id => selectedSet.has(id));
+
   const rest = selected.filter(
-    id => id !== baseHotel && !pinnedIds.includes(id)
+    id => id !== baseHotel && !pinned.includes(id)
   );
 
   return [
     baseHotel,
-    ...pinnedIds,
+    ...pinned,
     ...rest
   ];
 }

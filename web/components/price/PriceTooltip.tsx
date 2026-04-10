@@ -23,7 +23,7 @@ type Props = {
   active?: boolean;
   payload?: any;
   label?: string | number;
-  selected: number[];
+  displaySelected: number[];
   baseHotel: number;
   hotelMap: Record<number, string>;
   pinnedIds: number[];
@@ -33,7 +33,7 @@ export default function PriceTooltip({
   active,
   payload,
   label,
-  selected,
+  displaySelected,
   baseHotel,
   hotelMap,
   pinnedIds
@@ -44,8 +44,8 @@ export default function PriceTooltip({
   // データ生成
   // ------------------------
   const rows = useMemo(() => {
-    return buildRows(payload, selected, baseHotel);
-  }, [payload, selected, baseHotel]);
+    return buildRows(payload, displaySelected, baseHotel);
+  }, [payload, displaySelected, baseHotel]);
 
   const sorted = useMemo(() => {
     return sortRows(rows, baseHotel, pinnedIds);

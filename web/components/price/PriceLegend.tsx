@@ -22,7 +22,7 @@ type Props = {
   payload?: any;
   baseHotel: number;
   data: any[];
-  selected: number[];
+  displaySelected: number[];
   hoveredId: number | null;
   setHoveredId: (v: number | null) => void;
   pinnedIds: number[];
@@ -34,7 +34,7 @@ export default function PriceLegend({
   payload,
   baseHotel,
   data,
-  selected,
+  displaySelected,
   hoveredId,
   setHoveredId,
   pinnedIds,
@@ -49,8 +49,8 @@ export default function PriceLegend({
   // データ生成
   // ------------------------
   const merged = useMemo(() => {
-    return buildLegendData(selected, payload, data, hotelMap);
-  }, [selected, payload, data, hotelMap]);
+    return buildLegendData(displaySelected, payload, data, hotelMap);
+  }, [displaySelected, payload, data, hotelMap]);
 
   const sorted = useMemo(() => {
     return sortLegend(merged, baseHotel, pinnedIds);

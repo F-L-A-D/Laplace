@@ -1,120 +1,104 @@
-// web/components/soldout/SoldOuteTable.tsx
-
 "use client";
 
 import { useMemo } from "react";
 import HotelName from "@/components/common/HotelName";
 import SectionTitle from "@/components/common/SectionTitle";
 
-const MAX = 5;
-const NAME_WIDTH = 140;
+import { sortHotels } from "@/utils/pinned";
+import {
+  buildSoldOutMap,
+  buildSoldOutRows
+} from "./soldout.logic";
+
+import { getRowBg } from "@/utils/ui";
+
 
 type Props = {
   data: any[];
-  selected: number[];
+  displaySelected: number[];
   hotelMap: Record<number, string>;
-  baseHotel: number | null;
+  baseHotel: number;
+  pinnedIds: number[];
 };
 
 export default function SoldOutTable({
   data,
-  selected,
+  displaySelected,
   hotelMap,
-  baseHotel
+  baseHotel,
+  pinnedIds
 }: Props) {
 
+  // ------------------------
+  // 集計
+  // ------------------------
   const map = useMemo(() => {
-    const res: Record<number, { rate: number; days: number; total: number }> = {};
+    return buildSoldOutMap(data, displaySelected);
+  }, [data, displaySelected]);
 
-    selected.forEach(id => {
-      let sold = 0;
-      let total = 0;
+  // ------------------------
+  // 並び統一
+  // ------------------------
+  const sorted = useMemo(() => {
+    return sortHotels(displaySelected, baseHotel, pinnedIds);
+  }, [displaySelected, baseHotel, pinnedIds]);
 
-      data.forEach((row: any) => {
-        const v = row[`hotel_${id}`];
-
-        if (v !== undefined) {
-          total++;
-          if (v === null) sold++;
-        }
-      });
-
-      res[id] = {
-        rate: total ? sold / total : 0,
-        days: sold,
-        total
-      };
-    });
-
-    return res;
-  }, [data, selected]);
-
-  const ordered = useMemo(() => {
-    const arr = [...selected]
-    .sort((a, b) => {
-
-      if (a === baseHotel) return -1;
-      if (b === baseHotel) return 1;
-
-      return (map[b]?.rate ?? 0) - (map[a]?.rate ?? 0);
-    })
-    .slice(0, MAX)
-    ;
-
-    while (arr.length < MAX) arr.push(-1);
-    return arr;
-  }, [selected, map, baseHotel]);
+  // ------------------------
+  // 行生成
+  // ------------------------
+  const rows = useMemo(() => {
+    return buildSoldOutRows(sorted, map);
+  }, [sorted, map]);
 
   return (
     <>
       <SectionTitle title="SOLD OUT RATE" />
-      <table
-        style={{
-          borderCollapse: "collapse",
-          width: "100%",
-          tableLayout: "fixed",
-          marginTop: "12px"
-        }}
-      >
+
+      <table style={table}>
         <thead>
           <tr>
-            <th style={{ width: NAME_WIDTH }}>Hotel</th>
+            <th style={{ width: 140 }}>Hotel</th>
             <th style={{ width: 60 }}>Rate</th>
-            <th style={{ width: 60 }}>Days</th>
+            <th style={{ width: 80 }}>Days</th>
           </tr>
         </thead>
 
         <tbody>
-          {ordered.map((id, i) => {
-            if (id === -1) {
+          {rows.map((r, i) => {
+
+            if (r.id == null) {
               return (
-                <tr key={`empty_${i}`}>
-                  <td style={{ textAlign: "center" }}>-</td>
-                  <td style={{ textAlign: "center" }}>-</td>
-                  <td style={{ textAlign: "center" }}>-</td>
+                <tr key={i}>
+                  <td style={tdCenter}>-</td>
+                  <td style={tdCenter}>-</td>
+                  <td style={tdCenter}>-</td>
                 </tr>
               );
             }
 
-            const isBase = id === baseHotel;
+            const isBase = r.id === baseHotel;
 
             return (
               <tr
-                key={id}
+                key={r.id}
                 style={{
-                  backgroundColor: isBase ? "#fff8dc" : "transparent"
+                  background: getRowBg(r.id, baseHotel, pinnedIds)
                 }}
               >
                 <td>
-                  <HotelName id={id} hotelMap={hotelMap} />
+                  <HotelName id={r.id} hotelMap={hotelMap} />
                 </td>
 
-                <td style={{ textAlign: "center" }}>
-                  {(map[id]?.rate * 100).toFixed(1)}%
+                <td style={tdCenter}>
+                  {r.rate != null
+                    ? `${(r.rate * 100).toFixed(1)}%`
+                    : "-"}
                 </td>
 
-                <td style={{ textAlign: "center" }}>
-                  {map[id]?.days} / {map[id]?.total}
+                <td style={tdCenter}>
+                  {r.days != null && r.total != null
+                    ? `${r.days} / ${r.total}`
+                    : "-"}
                 </td>
               </tr>
             );
@@ -124,3 +108,15 @@ export default function SoldOutTable({
     </>
   );
 }
+
+// styles
+const table = {
+  borderCollapse: "collapse" as const,
+  width: "100%",
+  tableLayout: "fixed" as const,
+  marginTop: "12px"
+};
+
+const tdCenter = {
+  textAlign: "center" as const
+};

@@ -11,7 +11,7 @@ import {
   TD_CELL,
   BASE_BORDER,
   LEGEND
-} from "@/components/common/tableStyles";
+} from "@/styles/table";
 
 type Props = {
   matrix: any[];

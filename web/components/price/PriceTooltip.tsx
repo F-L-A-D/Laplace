@@ -2,6 +2,23 @@
 
 import HotelName from "@/components/common/HotelName";
 
+import {
+  buildRows,
+  sortRows,
+  formatDiff
+} from "./priceTooltip.logic";
+
+import {
+  wrap,
+  header,
+  row,
+  soldOut
+} from "./priceTooltip.styles";
+
+import { COLORS } from "@/styles/theme";
+
+import { useMemo } from "react";
+
 type Props = {
   active?: boolean;
   payload?: any;
@@ -9,6 +26,7 @@ type Props = {
   selected: number[];
   baseHotel: number;
   hotelMap: Record<number, string>;
+  pinnedIds: number[];
 };
 
 export default function PriceTooltip({
@@ -17,84 +35,45 @@ export default function PriceTooltip({
   label,
   selected,
   baseHotel,
-  hotelMap
+  hotelMap,
+  pinnedIds
 }: Props) {
-  if (!active || !payload || !selected) return null;
+  if (!active || !payload?.length) return null;
 
-  const safeSelected = selected ?? [];
+  // ------------------------
+  // データ生成
+  // ------------------------
+  const rows = useMemo(() => {
+    return buildRows(payload, selected, baseHotel);
+  }, [payload, selected, baseHotel]);
 
-  const map = Object.fromEntries(
-    payload.map((p: any) => [p.dataKey, p.value])
-  );
-
-  const rows = selected.map((id: number) => {
-    const key = `hotel_${id}`;
-    const entry = payload?.find((p: any) => p.dataKey === key);
-
-    return {
-      id,
-      value: entry?.value ?? null,
-    };
-  });
-
-  const base = rows.find(r => r.id === baseHotel)?.value ?? null;
-
-  const enriched = rows.map(r => ({
-    ...r,
-    diff:
-      base != null && r.value != null
-        ? r.value - base
-        : null
-  }));
-
-
-  const sorted = [...enriched].sort((a, b) => {
-    if (a.id === baseHotel) return -1;
-    if (b.id === baseHotel) return 1;
-
-    const aNull = a.value == null;
-    const bNull = b.value == null;
-
-    if (aNull && !bNull) return -1;
-    if (!aNull && bNull) return 1;
-
-    return (b.value ?? -1) - (a.value ?? -1);
-  });
+  const sorted = useMemo(() => {
+    return sortRows(rows, baseHotel, pinnedIds);
+  }, [rows, baseHotel]);
 
   return (
-    <div
-      style={{
-        background: "#fff",
-        border: "1px solid #ddd",
-        padding: "10px",
-        fontSize: "12px",
-        minWidth: "180px"
-      }}
-    >
+    <div style={wrap}>
       {/* 日付 */}
-      <div style={{ marginBottom: "6px", fontWeight: "bold" }}>
-        {label}
-      </div>
+      <div style={header}>{label}</div>
 
       {/* リスト */}
       {sorted.map((r) => {
         const isBase = r.id === baseHotel;
         const isSoldOut = r.value == null;
+        const isPinned = pinnedIds.includes(r.id);
 
         return (
           <div
             key={r.id}
             style={{
-              display: "grid",
-              gridTemplateColumns: "140px 70px 60px",
-              alignItems: "center",
-              padding: "2px 4px",
-              marginBottom: "2px",
+              ...row,
               background: isBase
-                ? "#fff8dc"
+                ? COLORS.bg.base
+                : isPinned
+                ? COLORS.bg.pinned
                 : isSoldOut
-                ? "#f3f4f6"
-                : "transparent"
+                ? COLORS.bg.subtle
+                : COLORS.bg.default
             }}
           >
             {/* ホテル名 */}
@@ -105,7 +84,7 @@ export default function PriceTooltip({
             {/* 価格 */}
             <div style={{ textAlign: "right" }}>
               {isSoldOut
-                ? <span style={{ color: "#999" }}>SOLD OUT</span>
+                ? <span style={{ color: COLORS.text.muted }}>SOLD OUT</span>
                 : r.value.toLocaleString()}
             </div>
 
@@ -114,10 +93,13 @@ export default function PriceTooltip({
               {!isBase && r.diff != null && (
                 <span
                   style={{
-                    color: r.diff > 0 ? "#dc2626" : "#2563eb"
+                    color: 
+                      r.diff > 0 
+                        ? COLORS.text.positive
+                        : COLORS.text.negative
                   }}
                 >
-                  {`${r.diff > 0 ? "+" : ""}${(r.diff / 1000).toFixed(1)}K`}
+                  {formatDiff(r.diff)}
                 </span>
               )}
             </div>

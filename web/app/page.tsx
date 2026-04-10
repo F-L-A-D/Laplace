@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useHotels } from "@/hooks/useHotels";
 import { usePrices } from "@/hooks/usePrices";
@@ -32,22 +32,26 @@ export default function Home() {
     setBaseHotel
   } = useHotels();
 
-  const disPlaySelected = useNormalizedSelected(
+  const displaySelected = useNormalizedSelected(
     selected,
     baseHotel
   );
 
   const data = usePrices(
-    disPlaySelected,
+    displaySelected,
     year,
     month
   );
 
   const rateMatrix = useRateMatrix(
-    selected,
+    displaySelected,
     year,
     month
   );
+
+  useEffect(() => {
+    setPinnedIds(prev => prev.filter(id => displaySelected.includes(id)));
+  }, [selected]);
   
   if (baseHotel === null) return <div>Loading...</div>;
 
@@ -137,9 +141,10 @@ export default function Home() {
                 </div>
                   <Layer1
                     data={data}
-                    selected={disPlaySelected}
                     baseHotel={baseHotel}
                     hotelMap={hotelMap}
+                    selected={selected}
+                    displaySelected={displaySelected}
                     setSelected={setSelected}
                     pinnedIds={pinnedIds}
                     setPinnedIds={setPinnedIds}
@@ -161,11 +166,13 @@ export default function Home() {
                 </div>
                   <Layer2 
                     rateMatrix={rateMatrix}
-                    selected={selected}
+                    selected={displaySelected}
                     baseHotel={baseHotel}
                     hotelMap={hotelMap}
                     year={year}
                     month={month}
+                    pinnedIds={pinnedIds}
+                    setPinnedIds={setPinnedIds}
                   />
               </div>
             </div>

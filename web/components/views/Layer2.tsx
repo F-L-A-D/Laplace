@@ -11,6 +11,7 @@ type Props = {
   year: string;
   month: string;
   pinnedIds: number[];
+  setPinnedIds: (v: number[]) => void
 };
 
 export default function Layer2({
@@ -20,7 +21,8 @@ export default function Layer2({
   hotelMap,
   year,
   month,
-  pinnedIds
+  pinnedIds,
+  setPinnedIds
 }: Props) {
   return (
     <div

@@ -2,7 +2,7 @@
 
 import HotelName from "@/components/common/HotelName";
 import SectionTitle from "@/components/common/SectionTitle";
-import { sortHotels } from "@/utils/sortHotels";
+import { sortHotels } from "@/utils/pinned";
 
 import {
   TABLE,
@@ -11,7 +11,7 @@ import {
   TD_DAY,
   TD_CELL,
   BASE_BORDER
-} from "@/components/common/tableStyles";
+} from "@/styles/table";
 
 type Props = {
   matrix: any[];

@@ -8,19 +8,21 @@ import SoldOutTable from "@/components/soldout/SoldOutTable";
 
 type Props = {
   data: any[];
-  selected: number[];
   baseHotel: number;
   hotelMap: Record<number, string>;
-  setSelected: (v: number[]) => void;
+  selected: number[];
+  displaySelected: number[];
+  setSelected: React.Dispatch<React.SetStateAction<number[]>>;
   pinnedIds: number[];
-  setPinnedIds: (v: number[]) => void
+  setPinnedIds: React.Dispatch<React.SetStateAction<number[]>>;
 };
 
 export default function Layer1({
   data,
-  selected,
   baseHotel,
   hotelMap,
+  selected,
+  displaySelected,
   setSelected,
   pinnedIds,
   setPinnedIds
@@ -47,9 +49,10 @@ export default function Layer1({
       >
         <PriceChart
           data={data}
-          selected={selected}
           baseHotel={baseHotel}
           hotelMap={hotelMap}
+          selected={selected}
+          displaySelected={displaySelected}
           setSelected={setSelected}
           pinnedIds={pinnedIds}
           setPinnedIds={setPinnedIds}
@@ -70,18 +73,21 @@ export default function Layer1({
       >
         <div style={{ flex: 0.8, overflow: "auto" }}>
           <ReviewTable
-            selected={selected}
+            data={data}
+            displaySelected={displaySelected}
             hotelMap={hotelMap}
             baseHotel={baseHotel}
+            pinnedIds={pinnedIds}
           />
         </div>
 
         <div style={{ flex: 0.8, overflow: "auto" }}>
           <SoldOutTable
             data={data}
-            selected={selected}
+            displaySelected={displaySelected}
             hotelMap={hotelMap}
             baseHotel={baseHotel}
+            pinnedIds={pinnedIds}
           />
         </div>
       </div>

@@ -110,7 +110,6 @@ export default function PriceLegend({
               style={{
                 ...dot,
                 background: entry.color,
-                border: isBase ? "2px solid #000" : "none"
               }}
             />
 

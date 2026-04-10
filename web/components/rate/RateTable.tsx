@@ -33,12 +33,12 @@ export default function RateTable({
 
   const safeSelected = selected ?? [];
 
-  const sorted = [
+  const sorted: (number | null)[] = [
     baseHotel,
     ...safeSelected.filter(h => h !== baseHotel)
   ];
 
-  const hotels = sorted.slice(0, 5);
+  const hotels: (number | null)[]  = sorted.slice(0, 5);
   while (hotels.length < 5) hotels.push(null);
 
   return (

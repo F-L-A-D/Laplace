@@ -5,10 +5,15 @@ cryptography==46.0.6
 greenlet==3.3.2
 idna==3.11
 jpholiday==1.0.3
+numpy==2.4.4
+pandas==3.0.2
 pycparser==3.0
 pyee==13.0.1
 PyMySQL==1.1.2
+python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
 requests==2.33.1
+six==1.17.0
 typing_extensions==4.15.0
+tzdata==2026.1
 urllib3==2.6.3

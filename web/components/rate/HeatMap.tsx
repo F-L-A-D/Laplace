@@ -35,8 +35,8 @@ export default function HeatMap({
 
   const scale = calcScale(matrix);
 
-  const sorted = sortHotels(selected, baseHotel,pinnedIds);
-  const hotels = sorted.slice(0, 5);
+  const sorted: (number | null )[] = sortHotels(selected, baseHotel,pinnedIds);
+  const hotels: (number | null )[] = sorted.slice(0, 5);
   while (hotels.length < 5) hotels.push(null);
 
   return (

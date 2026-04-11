@@ -14,7 +14,7 @@ export function reorderPinned(
 export function sortHotels(
   selected: (number | null)[],
   baseHotel: number,
-  pinnedIds: number[] = []
+  pinnedIds: (number | null)[] = []
 ) {
   const selectedSet = new Set(selected);
   const pinned = pinnedIds.filter(id => selectedSet.has(id));

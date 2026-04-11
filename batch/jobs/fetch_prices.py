@@ -13,7 +13,7 @@ def run(collected_at):
     data = run_rakuten()
 
     if DEBUG:
-        print("[DEBUG DATA] PRICES")
+        print("[DEBUG] PRICES")
         print(data)
         return
 
@@ -25,4 +25,4 @@ def run(collected_at):
         print("[SAVED REVIEWS]")
 
 if __name__ == "__main__":
-    run(datetime.now())
+    run()

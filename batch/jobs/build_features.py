@@ -17,7 +17,7 @@ def run(collected_at):
     df = pd.DataFrame(features)
 
     if DEBUG:
-        print("[DEBUG DATA] FEATURES")
+        print("[DEBUG] FEATURES")
         print(df.head(10))
         return
     
@@ -27,4 +27,4 @@ def run(collected_at):
     return
 
 if __name__ == "__main__":
-    run(datetime.now())
+    run()

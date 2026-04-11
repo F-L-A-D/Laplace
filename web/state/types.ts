@@ -1,17 +1,17 @@
 export type DataLayer =
-    | "raw_rakuten"
-    | "raw_jalan"
+    | "raw"
     | "normalized"
-    | "model_global"
-    | "model_private";
+    | "model"
+    | "forecast";
 
-export type State = {
-    baseHotel: number;
-    selected: number[];
-    pinned: number[];
-    year: string;
-    month: string;
-    layer: DataLayer;
+export type State ={
+      layer: DataLayer,
+      source_id: number | null,
+      baseHotel: number,
+      selected: number[],
+      pinned: number[],
+      year: string,
+      month: string
 };
 
 export type Action = 
@@ -25,7 +25,5 @@ export type Action =
     | { type: "PIN_CLEAR"; }
     | { type: "SET_YEAR"; year: string }
     | { type: "SET_MONTH"; month: string }
-    | { type: "SET_LAYER"; layer:DataLayer }
-
-
- 
+    | { type: "SET_SOURCE"; source_id: number }
+    | { type: "SET_LAYER"; layer: DataLayer }

@@ -1,23 +1,13 @@
-type Params = {
-    ids: number[];
-};
+// web/data/reviews.ts
 
-export async function fetchReviews (
-    layer: string,
-    { ids }: Params
-){
-    const qs = `hotel_ids=${ids.join(",")}`;
-    
-    switch (layer) {
-        case "raw_rakuten":
-            return fetch (`/api/rakuten/reviews?${qs}`);
-        case "raw_jyalan":
-            return fetch (`/api/jalan/reviews?${qs}`);
-        case "normalized":
-            return fetch (`/api/normalized/reviews?${qs}`);
-        case "model_global":
-            return fetch (`/api/model/reviews?${qs}`);
-        default:
-            throw new Error("invalid layer");
-    }
+export async function fetchReviews(
+  ids: number[],
+  source_id: number
+) {
+  const params = new URLSearchParams({
+    hotel_ids: ids.join(","),
+    source_id: String(source_id)
+  });
+
+  return fetch(`/api/reviews?${params}`);
 }

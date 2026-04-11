@@ -2,7 +2,7 @@ import { State, Action } from "./types";
 import { sync } from "./sync";
 
 export function reducer(state: State, action: Action): State {
-    let next = state;
+    let next: State = state;
     switch (action.type) {
         case "INIT": {
             next = {
@@ -44,6 +44,12 @@ export function reducer(state: State, action: Action): State {
             const ids = Array.from(new Set(action.ids)).filter(
                 id => id !== state.baseHotel
             );
+            const isSame =
+                ids.length === state.selected.length &&
+                ids.every((v, i) => v === state.selected[i]);
+
+            if (isSame) return state;
+
             next = {
                 ...state,
                 selected: ids,
@@ -84,15 +90,27 @@ export function reducer(state: State, action: Action): State {
         }
         case "SET_MONTH": {
             next = {
-                ...next,
+                ...state,
                 month: action.month
+            };
+            break;
+        }
+        case "SET_SOURCE": {
+            next = {
+                ...state,
+                source_id: state.layer == "raw" 
+                    ? action.source_id ?? 1
+                    : null
             };
             break;
         }
         case "SET_LAYER": {
             next = {
                 ...state,
-                layer: action.layer
+                layer: action.layer,
+                source_id: action.layer == "raw" 
+                    ? state.source_id ?? 1
+                    : null
             };
             break;
         }

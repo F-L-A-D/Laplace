@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { fetchRateMatrix } from "@/data/rate";
-import { start } from "repl";
+import { QueryParams } from "@/types/query";
 
 type Row = {
   hotel_id: number;
@@ -13,28 +13,35 @@ type Row = {
   hotel_median_diff: number;
 };
 
-export function useRateMatrix(
-  selected: number[],
-  year: string,
-  month: string,
-  layer: string
-) {
+export function useRateMatrix({
+  ids = [],
+  year,
+  month,
+  source_id,
+  layer
+}: QueryParams) {
+
   const [matrix, setMatrix] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!selected.length) {
-      setMatrix([]);
+    if (!ids.length) {
+      setMatrix(prev => (prev.length === 0 ? prev : []));
       return;
     }
 
     let cancelled = false;
 
-    fetchRateMatrix(layer, { ids: selected, year, month })
+    fetchRateMatrix({
+      ids,
+      year,
+      month,
+      source_id,
+      layer
+    })
       .then(res => res.json())
       .then((data: Row[]) => {
         if (cancelled) return;
 
-        // --- map化 ---
         const map = new Map<string, Row>();
 
         data.forEach(d => {
@@ -46,7 +53,6 @@ export function useRateMatrix(
           });
         });
 
-        // --- 日付生成 ---
         const lastDay = new Date(
           Number(year),
           Number(month),
@@ -57,10 +63,9 @@ export function useRateMatrix(
           String(i + 1).padStart(2, "0")
         );
 
-        const hotels = selected.slice(0, 10);
+        const hotels = ids.slice(0, 10);
         const mm = String(month).padStart(2, "0");
 
-        // --- table生成  ---
         const table = days.map(day => {
           const row: any = {
             day,
@@ -79,7 +84,12 @@ export function useRateMatrix(
           return row;
         });
 
-        setMatrix(table);
+        setMatrix(prev => {
+          if (JSON.stringify(prev) === JSON.stringify(table)) {
+            return prev;
+          }
+          return table;
+        });
       })
       .catch(() => {
         if (!cancelled) setMatrix([]);
@@ -88,7 +98,7 @@ export function useRateMatrix(
     return () => {
       cancelled = true;
     };
-  }, [selected, year, month, layer]);
+  }, [ids, year, month, source_id, layer]);
 
   return matrix;
 }

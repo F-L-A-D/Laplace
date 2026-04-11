@@ -9,19 +9,18 @@ type Review = {
 
 export function useReviews(
   ids: number[],
-  layer: string
+  source_id: number | null
 ){
+  if (!source_id) return [];
+
   const [data, setData] = useState<Record<number, Review>>({});
 
   useEffect(() => {
-    if (!ids.length) {
-      setData({});
-      return;
-    }
+    if (!ids.length) return;
 
     let cancelled = false;
 
-    fetchReviews(layer, { ids })
+    fetchReviews(ids, source_id)
       .then(res => res.json())
       .then((rows: Review[]) => {
         if (cancelled) return;
@@ -37,7 +36,7 @@ export function useReviews(
     return() => {
       cancelled = true;
     };
-  }, [ids, layer]);
+  }, [ids, source_id]);
 
   return data;
 }

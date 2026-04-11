@@ -30,7 +30,7 @@ import {
   BASE_COLOR
 } from "@/components/price/priceChart.styles";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 
 
 type Props = {
@@ -57,7 +57,6 @@ export default function PriceChart({
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const { baseHotel, displaySelected, pinned } = view;
   const { pin, unpin } = actions;
-  console.log("data", data);
 
   // ------------------------
   // baseレンジ
@@ -77,18 +76,16 @@ export default function PriceChart({
   // wrap
   // ------------------------
 
-  const handleTogglePin = (id: number) => {
+  const handleTogglePin = useCallback((id: number) => {
     if (pinned.includes(id)){
       unpin(id);
     } else {
       pin(id);
     }
-  };  
+  }, [pinned, pin, unpin]);  
   
   const chartData = useMemo(() => {
     const flat = Array.isArray(data[0]) ? data[0] : data;
-    console.log("flat", flat)
-
     const map: Record<string, any> = {};
 
     flat.forEach((r: any) => {
@@ -104,6 +101,45 @@ export default function PriceChart({
 
     return Object.values(map);
   }, [data]);
+
+  const renderTooltip = useCallback(
+    (props: any) => (
+      <PriceTooltip
+        {...props}
+        hotelMap={hotelMap}
+        view={view}
+      />
+    ),
+    [hotelMap, view]
+  );
+
+  const renderLegend = useCallback(
+    (props: any) => (
+      <PriceLegend
+        {...props}
+        data={data}
+        view={view}
+        hotelMap={hotelMap}
+        hoveredId={hoveredId}
+        setHoveredId={setHoveredId}
+        onTogglePin={handleTogglePin}
+      />
+    ),
+    [data, view, hotelMap, hoveredId, handleTogglePin]
+  );
+
+  const formatDateTick = useCallback((d: any) => {
+    if (!d) return "";
+    const s = String(d);
+    return s.length >= 10 ? s.slice(8, 10) : "";
+  }, []);
+
+  const formatYTick = useCallback((v: any) => {
+    if (v == null) return "";
+    return `${(Number(v) / 1000).toFixed(1)}K`;
+  }, []);
+
+  
 
   // ------------------------
   // render
@@ -122,19 +158,11 @@ export default function PriceChart({
 
             <XAxis
               dataKey="date"
-              tickFormatter={(d) => {
-                if (!d) return "";
-                const s = String(d);
-                return d.length >= 10 ? d.slice(8, 10) : "";
-              }}
+              tickFormatter={formatDateTick}
             />
 
             <YAxis
-              tickFormatter={(v) =>
-                v != null
-                  ? `${(Number(v) / 1000).toFixed(1)}K`
-                  : ""
-              }
+              tickFormatter={formatYTick}
               width={40}
               tick={{ fontSize: 11 }}
               axisLine={false}
@@ -142,29 +170,8 @@ export default function PriceChart({
               domain={[safeMin, safeMax]}
             />
 
-            <Tooltip
-              content={(props) => (
-                <PriceTooltip
-                  {...props}
-                  hotelMap={hotelMap}
-                  view={view}
-                />
-              )}
-            />
-
-            <Legend
-              content={(props) => (
-                <PriceLegend
-                  {...props}
-                  data={data}
-                  view={view}
-                  hotelMap={hotelMap}
-                  hoveredId={hoveredId}
-                  setHoveredId={setHoveredId}
-                  onTogglePin={handleTogglePin}
-                />
-              )}
-            />
+            <Tooltip content={renderTooltip}/>
+            <Legend content={renderLegend}/>
 
             {sorted
               .filter((id): id is number => id != null)

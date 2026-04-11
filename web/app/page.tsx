@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useMemo, useReducer, useState, useCallback } from "react";
 
 import { reducer } from "@/state/reducer";
 import { initialState } from "@/state/initial";
@@ -10,7 +10,7 @@ import { usePrices } from "@/hooks/usePrices";
 import { useNormalizedSelected } from "@/hooks/useNormalizedSelected";
 import { useRateMatrix } from "@/hooks/useRateMatrix";
 import { useReviews } from "@/hooks/useReviews";
-import { MENU_MAP, MenuType } from "@/constants/menu";
+import { MenuType } from "@/constants/menu";
 
 import Header from "@/components/layout/header/Header";
 import Sidebar from "@/components/layout/sidebar/Sidebar";
@@ -23,7 +23,7 @@ import Layer2 from "@/components/views/Layer2";
 
 export default function Home() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { baseHotel, selected, pinned, year, month, layer } = state;
+  const { baseHotel, selected, pinned, year, month, source_id, layer } = state;
 
   const [isOpen, setIsOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState<MenuType | null>(null);
@@ -32,9 +32,44 @@ export default function Home() {
 
   const displaySelected = useNormalizedSelected(selected, baseHotel);
 
-  const data = usePrices(displaySelected, year, month, layer);
-  const rateMatrix = useRateMatrix(displaySelected, year, month, layer);
-  const reviewData = useReviews(displaySelected, layer);
+  const data = usePrices({
+    ids: displaySelected, 
+    year, 
+    month, 
+    source_id,
+    layer
+  });
+  const rateMatrix = useRateMatrix({
+    ids: displaySelected, 
+    year, 
+    month, 
+    source_id,
+    layer
+  });
+
+  const reviewData = useReviews(
+    displaySelected, 
+    source_id
+  );
+
+  const pin = useCallback((id : number) => {
+    dispatch({ type: "PIN_ADD", id});
+  }, [dispatch]);
+
+  const unpin = useCallback((id : number) => {
+    dispatch({ type: "PIN_REMOVE", id});
+  }, [dispatch]);
+
+  const viewMemo = useMemo(() => ({
+    baseHotel,
+    displaySelected,
+    pinned
+  }), [baseHotel, displaySelected, pinned]);
+  
+  const actionMemo = useMemo(() => ({
+    pin,
+    unpin,
+  }), [pin, unpin]);
 
   const closeAll = () => {
     setActiveMenu(null);
@@ -151,15 +186,8 @@ export default function Home() {
                   data={data}
                   reviewData={reviewData}
                   hotelMap={hotelMap}
-                  view={{
-                    baseHotel,
-                    displaySelected,
-                    pinned
-                  }}
-                  actions={{
-                    pin: (id: number) => dispatch({ type: "PIN_ADD", id }),
-                    unpin: (id: number) => dispatch({ type: "PIN_REMOVE", id })
-                  }}
+                  view={viewMemo}
+                  actions={actionMemo}
                 />
               </div>
 
@@ -174,11 +202,7 @@ export default function Home() {
                   hotelMap={hotelMap}
                   year={year}
                   month={month}
-                  view={{
-                    baseHotel,
-                    displaySelected,
-                    pinned
-                  }}
+                  view={viewMemo}
                 />
               </div>
             </div>

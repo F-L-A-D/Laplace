@@ -6,5 +6,6 @@ export const initialState: State = {
     pinned: [],
     year: "2026",
     month: "04",
-    layer: "raw_rakuten"
+    source_id: 1,
+    layer: "raw"
 };

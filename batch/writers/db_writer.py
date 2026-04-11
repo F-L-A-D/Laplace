@@ -134,9 +134,9 @@ def save_features(features, collected_at, source_id=1):
 
     execute_write(sql, data, many=True, label="FEATURES")
 
-def save_pickup(collected_at):
+def save_pickups(collected_at):
     sql = """
-        INSERT INTO pickup (
+        INSERT INTO pickups (
             hotel_id,
             source_id,
             date,
@@ -165,4 +165,4 @@ def save_pickup(collected_at):
             pickup_7d    = VALUES(pickup_7d)
     """
 
-    execute_write(sql, (collected_at,), label="PICKUP")
+    execute_write(sql, (collected_at,), label="PICKUPS")

@@ -166,32 +166,34 @@ export default function PriceChart({
               )}
             />
 
-            {sorted.map((id, i) => {
-              const { isBase, isActive, isDimmed } =
-                getLineState(id, baseHotel, hoveredId, pinned);
+            {sorted
+              .filter((id): id is number => id != null)
+              .map((id, i) => {
+                const { isBase, isActive, isDimmed } =
+                  getLineState(id, baseHotel, hoveredId, pinned);
 
-              return (
-                <Line
-                  key={id}
-                  dataKey={`hotel_${id}`}
-                  name={hotelMap[id]}
-                  stroke={getStroke(
-                    id,
-                    i,
-                    data,
-                    baseMin,
-                    baseMax,
-                    baseHotel,
-                    COLORS,
-                    BASE_COLOR
-                  )}
-                  strokeWidth={isActive ? 4 : 2}
-                  strokeOpacity={isDimmed ? 0.2 : 1}
-                  dot={isBase ? { r: 3 } : false}
-                  activeDot={{ r: 6 }}
-                />
-              );
-            })}
+                return (
+                  <Line
+                    key={id}
+                    dataKey={`hotel_${id}`}
+                    name={hotelMap[id]}
+                    stroke={getStroke(
+                      id,
+                      i,
+                      data,
+                      baseMin,
+                      baseMax,
+                      baseHotel,
+                      COLORS,
+                      BASE_COLOR
+                    )}
+                    strokeWidth={isActive ? 4 : 2}
+                    strokeOpacity={isDimmed ? 0.2 : 1}
+                    dot={isBase ? { r: 3 } : false}
+                    activeDot={{ r: 6 }}
+                  />
+                );
+              })}
           </LineChart>
         </ResponsiveContainer>
       </div>

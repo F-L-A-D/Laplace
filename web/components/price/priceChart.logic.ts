@@ -31,6 +31,7 @@ export function getLineState(
   hoveredId: number | null,
   pinnedIds: number[]
 ) {
+  
   const isBase = id === baseHotel;
   const isHovered = hoveredId === id;
   const isPinned = pinnedIds.includes(id);

@@ -1,7 +1,17 @@
 export function calcBaseRange(data: any[], baseHotel: number) {
   const values = data
-    .map(d => d[`hotel_${baseHotel}`])
+    .filter(d => d.hotel_id === baseHotel)
+    .map(d => d.price)
     .filter(v => v != null);
+
+  if (!values.length) {
+    return {
+      baseMin: 0,
+      baseMax: 100,
+      safeMin: 0,
+      safeMax: 100
+    };
+  }
 
   const min = Math.min(...values);
   const max = Math.max(...values);
@@ -45,7 +55,9 @@ export function getStroke(
   colors: string[],
   baseColor: string
 ) {
-  const latest = data[data.length - 1]?.[`hotel_${id}`];
+  const latest = data
+    .filter(d => d.hotel_id === id)
+    .at(-1)?.price;
 
   const isOutOfRange =
     latest != null && (latest < baseMin || latest > baseMax);

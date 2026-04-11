@@ -11,11 +11,11 @@ import {
   CartesianGrid
 } from "recharts";
 
-import SectionTitle from "@/components/common/SectionTitle";
+import SectionHeader from "@/components/common/SectionHeader";
 import PriceLegend from "@/components/price/PriceLegend";
 import PriceTooltip from "@/components/price/PriceTooltip";
 
-import { sortHotels, togglePin } from "@/utils/pinned";
+import { sortHotels } from "@/utils/pinned";
 
 import {
   calcBaseRange,
@@ -32,26 +32,32 @@ import {
 
 import { useState, useMemo } from "react";
 
+
 type Props = {
   data: any[];
-  baseHotel: number;
   hotelMap: Record<number, string>;
-  displaySelected: number[];
-  setSelected: React.Dispatch<React.SetStateAction<number[]>>;
-  pinnedIds: number[];
-  setPinnedIds: React.Dispatch<React.SetStateAction<number[]>>;
+  view: {
+    baseHotel: number;
+    displaySelected: number[];
+    pinned: number[];
+  }
+  actions: {
+    pin: (id: number) => void;
+    unpin: (id: number) => void;
+  }
 };
 
 export default function PriceChart({
   data,
-  baseHotel,
   hotelMap,
-  displaySelected,
-  setSelected,
-  pinnedIds,
-  setPinnedIds
+  view,
+  actions
 }: Props) {
+
   const [hoveredId, setHoveredId] = useState<number | null>(null);
+  const { baseHotel, displaySelected, pinned } = view;
+  const { pin, unpin } = actions;
+  console.log("data", data);
 
   // ------------------------
   // baseレンジ
@@ -64,37 +70,63 @@ export default function PriceChart({
   // 並び順（UI基準）
   // ------------------------
   const sorted = useMemo(() => {
-    return sortHotels(displaySelected, baseHotel, pinnedIds);
-  }, [displaySelected, baseHotel, pinnedIds]);
+    return sortHotels(displaySelected, baseHotel, pinned);
+  }, [displaySelected, baseHotel, pinned]);
 
   // ------------------------
   // wrap
   // ------------------------
 
   const handleTogglePin = (id: number) => {
-    setPinnedIds (prev =>
-      togglePin(id, baseHotel, prev)
-    );
-  };
+    if (pinned.includes(id)){
+      unpin(id);
+    } else {
+      pin(id);
+    }
+  };  
+  
+  const chartData = useMemo(() => {
+    const flat = Array.isArray(data[0]) ? data[0] : data;
+    console.log("flat", flat)
+
+    const map: Record<string, any> = {};
+
+    flat.forEach((r: any) => {
+      const date = new Date(r.date)
+        .toLocaleDateString("sv-SE")
+
+      if (!map[date]) {
+        map[date] = { date };
+      }
+
+      map[date][`hotel_${r.hotel_id}`] = r.price;
+    });
+
+    return Object.values(map);
+  }, [data]);
 
   // ------------------------
   // render
   // ------------------------
   return (
     <div style={wrap}>
-      <SectionTitle title="PRICE TREND" />
+      <SectionHeader title="PRICE TREND" />
 
       <div style={chartWrap}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
-            data={data}
+            data={chartData}
             margin={{ top: 20, right: 30, left: 10, bottom: 60 }}
           >
             <CartesianGrid stroke="#eee" strokeDasharray="3 3" />
 
             <XAxis
               dataKey="date"
-              tickFormatter={(d) => d.slice(8, 10)}
+              tickFormatter={(d) => {
+                if (!d) return "";
+                const s = String(d);
+                return d.length >= 10 ? d.slice(8, 10) : "";
+              }}
             />
 
             <YAxis
@@ -114,10 +146,8 @@ export default function PriceChart({
               content={(props) => (
                 <PriceTooltip
                   {...props}
-                  displaySelected={displaySelected}
-                  baseHotel={baseHotel}
                   hotelMap={hotelMap}
-                  pinnedIds={pinnedIds}
+                  view={view}
                 />
               )}
             />
@@ -126,21 +156,19 @@ export default function PriceChart({
               content={(props) => (
                 <PriceLegend
                   {...props}
-                  baseHotel={baseHotel}
                   data={data}
-                  displaySelected={displaySelected}
+                  view={view}
+                  hotelMap={hotelMap}
                   hoveredId={hoveredId}
                   setHoveredId={setHoveredId}
-                  pinnedIds={pinnedIds}
                   onTogglePin={handleTogglePin}
-                  hotelMap={hotelMap}
                 />
               )}
             />
 
             {sorted.map((id, i) => {
               const { isBase, isActive, isDimmed } =
-                getLineState(id, baseHotel, hoveredId, pinnedIds);
+                getLineState(id, baseHotel, hoveredId, pinned);
 
               return (
                 <Line

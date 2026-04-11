@@ -2,43 +2,41 @@
 
 import { useMemo } from "react";
 import HotelName from "@/components/common/HotelName";
-import SectionTitle from "@/components/common/SectionTitle";
+import SectionHeader from "@/components/common/SectionHeader";
 import { sortHotels } from "@/utils/pinned";
 
-import { useReviews } from "@/hooks/useReviews";
 import { buildReviewRows } from "@/components/review/review.logic";
 import { getRowBg } from "@/utils/ui";
 
+
 type Props = {
-  displaySelected: number[];
+  reviewData: Record<number, any>;
   hotelMap: Record<number, string>;
-  baseHotel: number;
-  pinnedIds: number[];
+  view: {
+    baseHotel: number;
+    displaySelected: (number | null)[];
+    pinned: number[];
+  }
 };
 
 export default function ReviewTable({
-  displaySelected,
+  reviewData,
   hotelMap,
-  baseHotel,
-  pinnedIds
+  view
 }: Props) {
-
-  const reviewData = useReviews(displaySelected);
+  const { baseHotel, displaySelected, pinned } = view;
 
   const sorted = useMemo(() => {
-    return sortHotels(displaySelected, baseHotel, pinnedIds);
-  }, [displaySelected, baseHotel, pinnedIds]);
+    return sortHotels(displaySelected, baseHotel, pinned);
+  }, [displaySelected, baseHotel, pinned]);
 
   const rows = useMemo(() => {
     return buildReviewRows(sorted, reviewData);
   }, [sorted, reviewData]);
 
-  console.log("sorted", sorted);
-  console.log("rows", rows);
-
   return (
     <>
-      <SectionTitle title="RAKUTEN REVIEWS" />
+      <SectionHeader title="RAKUTEN REVIEWS" />
 
       <table style={table}>
         <thead>
@@ -67,7 +65,7 @@ export default function ReviewTable({
               <tr
                 key={key}
                 style={{
-                  background: getRowBg(r.id, baseHotel, pinnedIds)
+                  background: getRowBg(r.id, baseHotel, pinned)
                 }}
               >
                 <td>
@@ -94,7 +92,8 @@ export default function ReviewTable({
 const table = {
   borderCollapse: "collapse" as const,
   width: "100%",
-  tableLayout: "fixed" as const
+  tableLayout: "fixed" as const,
+  marginTop: "12px"
 };
 
 const tdCenter = {

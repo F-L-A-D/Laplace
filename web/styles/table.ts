@@ -1,5 +1,5 @@
 export const TABLE = {
-  width: "100%",
+  width: "max-content" as const,
   borderCollapse: "collapse" as const,
   tableLayout: "fixed" as const
 };
@@ -7,7 +7,7 @@ export const TABLE = {
 export const ROW_HEIGHT = 44;
 export const HEADER_HEIGHT = 36;
 export const DAY_WIDTH = 40;
-export const COL_WIDTH = 120;
+export const COL_WIDTH = 150;
 
 // ----- header -----
 export const TH_DAY = {
@@ -27,21 +27,24 @@ export const TH = {
 };
 
 // ----- body -----
-export const TD_DAY = {
+
+const BASE_CELL = {
   height: `${ROW_HEIGHT}px`,
-  padding: "0 6px",
-  textAlign: "left" as const,
+  padding: "2px 0",
   borderBottom: "1px solid #f0f0f0",
-  fontWeight: 600,
+  verticalAlign: "middle" as const
+}
+
+export const TD_DAY = {
+  ...BASE_CELL,
+  textAlign: "left" as const,
+  fontWeight: 400,
   verticalAlign: "middle" as const
 };
 
 export const TD_CELL = {
-  height: `${ROW_HEIGHT}px`,
-  padding: "2px 0",
+  ...BASE_CELL,
   textAlign: "center" as const,
-  borderBottom: "1px solid #f0f0f0",
-  verticalAlign: "middle" as const
 };
 
 // ----- base hotel 強調 -----

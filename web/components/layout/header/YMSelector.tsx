@@ -72,7 +72,10 @@ export default function YMSelector({
             {years.map(y => (
               <div
                 key={y}
-                onClick={() => setYear(y)}
+                onClick={() => {
+                  setYear(y);
+                  setOpen(false);
+                }}
                 style={s.item(y === year)}
               >
                 {y}
@@ -84,7 +87,10 @@ export default function YMSelector({
             {months.map(m => (
               <div
                 key={m}
-                onClick={() => setMonth(m)}
+                onClick={() => {
+                  setMonth(m);
+                  setOpen(false);
+                }}
                 style={s.item(m === month)}
               >
                 {m}

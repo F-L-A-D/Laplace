@@ -1,19 +1,3 @@
-export function togglePin(
-  id: number,
-  baseHotel: number,
-  pinnedIds: number[]
-) {
-  if (id === baseHotel) return pinnedIds;
-
-  if (pinnedIds.includes(id)) {
-    return pinnedIds.filter(v => v !== id);
-  }
-
-  if (pinnedIds.length >= 4) return pinnedIds;
-
-  return [...pinnedIds, id];
-}
-
 export function reorderPinned(
   prev: number[],
   fromIndex: number,
@@ -28,7 +12,7 @@ export function reorderPinned(
 }
 
 export function sortHotels(
-  selected: number[],
+  selected: (number | null)[],
   baseHotel: number,
   pinnedIds: number[] = []
 ) {

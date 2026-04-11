@@ -1,4 +1,4 @@
-// web/app/api/reviews/route.ts
+// web/app/api/rakuten/reviews/route.ts
 
 import { query } from "@/lib/db";
 import { NextResponse } from "next/server";

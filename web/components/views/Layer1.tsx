@@ -8,25 +8,29 @@ import SoldOutTable from "@/components/soldout/SoldOutTable";
 
 type Props = {
   data: any[];
-  baseHotel: number;
+  reviewData: Record<number, any>;
   hotelMap: Record<number, string>;
-  selected: number[];
-  displaySelected: number[];
-  setSelected: React.Dispatch<React.SetStateAction<number[]>>;
-  pinnedIds: number[];
-  setPinnedIds: React.Dispatch<React.SetStateAction<number[]>>;
+  view: {
+    baseHotel: number;
+    displaySelected: number[];
+    pinned: number[];
+  };
+  actions: {
+    pin: (id: number) => void;
+    unpin: (id: number) => void;
+  }
 };
+
 
 export default function Layer1({
   data,
-  baseHotel,
+  reviewData,
   hotelMap,
-  selected,
-  displaySelected,
-  setSelected,
-  pinnedIds,
-  setPinnedIds
+  view,
+  actions
 }: Props) {
+  const { baseHotel, displaySelected, pinned } = view;
+  const { pin, unpin } = actions;
   return (
     <div
       style={{
@@ -49,12 +53,9 @@ export default function Layer1({
       >
         <PriceChart
           data={data}
-          baseHotel={baseHotel}
           hotelMap={hotelMap}
-          displaySelected={displaySelected}
-          setSelected={setSelected}
-          pinnedIds={pinnedIds}
-          setPinnedIds={setPinnedIds}
+          view={view}
+          actions={actions}
         />
       </div>
 
@@ -72,20 +73,17 @@ export default function Layer1({
       >
         <div style={{ flex: 0.8, overflow: "auto" }}>
           <ReviewTable
-            displaySelected={displaySelected}
+            reviewData={reviewData}
             hotelMap={hotelMap}
-            baseHotel={baseHotel}
-            pinnedIds={pinnedIds}
+            view={view}
           />
         </div>
 
         <div style={{ flex: 0.8, overflow: "auto" }}>
           <SoldOutTable
             data={data}
-            displaySelected={displaySelected}
             hotelMap={hotelMap}
-            baseHotel={baseHotel}
-            pinnedIds={pinnedIds}
+            view={view}
           />
         </div>
       </div>

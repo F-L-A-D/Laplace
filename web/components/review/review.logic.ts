@@ -1,5 +1,5 @@
 export function buildReviewRows(
-  ids: number[],
+  ids: (number | null)[],
   data: Record<number, any>,
   max = 5
 ) {

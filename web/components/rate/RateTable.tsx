@@ -1,7 +1,7 @@
 "use client";
 
 import HotelName from "@/components/common/HotelName";
-import SectionTitle from "@/components/common/SectionTitle";
+import SectionHeader from "@/components/common/SectionHeader";
 
 import {
   TABLE,
@@ -13,50 +13,49 @@ import {
   LEGEND
 } from "@/styles/table";
 
+
 type Props = {
   matrix: any[];
   hotelMap: Record<number, string>;
-  selected: number[];
-  baseHotel: number;
+  columns: (number | null)[];
   year: string;
   month: string;
+  view: {
+    baseHotel: number;
+    displaySelected: (number | null)[];
+    pinned: number[]
+  };
 };
 
 export default function RateTable({
   matrix,
   hotelMap,
-  selected,
-  baseHotel,
+  columns,
   year,
-  month
+  month,
+  view
 }: Props) {
+  const { baseHotel } = view;
+  const hotels = columns;
 
-  const safeSelected = selected ?? [];
-
-  const sorted: (number | null)[] = [
-    baseHotel,
-    ...safeSelected.filter(h => h !== baseHotel)
-  ];
-
-  const hotels: (number | null)[]  = sorted.slice(0, 5);
-  while (hotels.length < 5) hotels.push(null);
 
   return (
-    <div style={{ overflow: "auto", height: "100%" }}>
-      <div style={{ marginBottom: "4px" }}>
-        <SectionTitle title="RATE (PRICE / DIFF)" />
-        <div style={LEGEND}>
-          <span>M = market</span>
-          <span style={{ marginLeft: "12px" }}>H = hotel</span>
-        </div>
-      </div>
+    <div style={{ height: "100%" }}>
+
+       <SectionHeader 
+        title="RATE (PRICE / DIFF)"
+        legend={
+          <div style={LEGEND}>
+            <span>M = market_median_diff</span>
+            <span style={{ marginLeft: "12px" }}>H = hotel_median_diff</span>
+          </div>
+        }
+       />
 
       <table style={TABLE}>
 
         <thead>
           <tr>
-            <th style={TH_DAY}>Day</th>
-
             {hotels.map((hid, i) => {
               const isBase = hid === baseHotel;
 
@@ -93,14 +92,15 @@ export default function RateTable({
                   background: isWeekend ? "#fafafa" : "transparent"
                 }}
               >
-                <td style={TD_DAY}>{row.day}</td>
-
                 {hotels.map((hid, i) => {
-                  const cell = Object.values(row).find(
-                    (c: any) => c?.hotel_id === hid
-                  ) as any | undefined;
+                  if(!hid){
+                    return <td key={i} style={TD_CELL}>-</td>;
+                  }
+                  const cell = hid ? row.cells?.[hid] : null;
                   const isBase = hid === baseHotel;
-                  const bg = cell ? scoreToColor(cell.score): "transparent"; 
+                  const bg = cell 
+                    ? scoreToColor(cell.score)
+                    : "#f9fafb"; 
 
                   return (
                     <td

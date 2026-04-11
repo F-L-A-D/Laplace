@@ -32,7 +32,7 @@ export function buildSoldOutMap(
 }
 
 export function buildSoldOutRows(
-  ids: number[],
+  ids: (number | null)[],
   map: Record<number, any>,
   max = 5
 ) {

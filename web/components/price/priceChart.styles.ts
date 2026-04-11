@@ -7,7 +7,8 @@ export const wrap = {
 
 export const chartWrap = {
   flex: 1,
-  minHeight: 0
+  minHeight: 0,
+  minWidth: 0
 };
 
 export const COLORS = [

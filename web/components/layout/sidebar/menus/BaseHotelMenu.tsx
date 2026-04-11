@@ -11,39 +11,38 @@ type Hotel = {
 type Props = {
   hotels: Hotel[];
   baseHotel: number;
-  setBaseHotel: (id: number) => void;
   hotelMap: Record<number, string>;
   pinnedIds: number[];
+  onChange: (id: number) => void;
 };
 
 export default function BaseHotelMenu({
   hotels,
   baseHotel,
-  setBaseHotel,
   hotelMap,
-  pinnedIds
+  pinnedIds,
+  onChange
 }: Props) {
   const [keyword, setKeyword] = useState("");
 
   const filtered = useMemo(() => {
+    const k = keyword.toLowerCase();
     return hotels.filter(h =>
-      h.name.toLowerCase().includes(keyword.toLowerCase())
+      h.name.toLowerCase().includes(k)
     );
   }, [hotels, keyword]);
 
   const sorted = useMemo(() => {
-    const safePinned = pinnedIds ?? [];
+    const pinnedSet = new Set(pinnedIds);
 
     const base = filtered.find(h => h.id === baseHotel);
 
     const pinned = filtered.filter(
-      h => safePinned.includes(h.id) && h.id !== baseHotel
+      h => pinnedSet.has(h.id) && h.id !== baseHotel
     );
 
     const others = filtered.filter(
-      h =>
-        !safePinned.includes(h.id) &&
-        h.id !== baseHotel
+      h => !pinnedSet.has(h.id) && h.id !== baseHotel
     );
 
     return [
@@ -64,7 +63,7 @@ export default function BaseHotelMenu({
         style={search}
       />
 
-      <div style={list} className="modal-scroll">
+      <div style={list}>
         {sorted.map(h => (
           <HotelRow
             key={h.id}
@@ -72,7 +71,7 @@ export default function BaseHotelMenu({
             hotelMap={hotelMap}
             isBase={h.id === baseHotel}
             isPinned={pinnedIds.includes(h.id)}
-            onClick={() => setBaseHotel(h.id)}
+            onClick={() => onChange(h.id)}
           />
         ))}
       </div>
@@ -95,3 +94,9 @@ const list = {
   overflowY: "auto",
   overflowX: "hidden"
 } as const;
+
+const section = {
+  fontSize: "10px",
+  color: "#999",
+  padding: "6px 8px"
+};

@@ -26,6 +26,12 @@ export default function Header({
   onOpenMenu
 }: Props) {
 
+  const handleOpenBase = () => {
+    if (baseHotel !== null) {
+      onOpenMenu("base");
+    }
+  };
+
   return (
     <div style={s.wrap}>
       {/* 左 */}
@@ -37,7 +43,7 @@ export default function Header({
         <CurrentHotel
           baseHotel={baseHotel}
           hotelMap={hotelMap}
-          onClick={() => onOpenMenu("base")}
+          onClick={handleOpenBase}
         />
       </div>
 

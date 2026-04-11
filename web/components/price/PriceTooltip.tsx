@@ -6,14 +6,14 @@ import {
   buildRows,
   sortRows,
   formatDiff
-} from "./priceTooltip.logic";
+} from "@/components/price/priceTooltip.logic";
 
 import {
   wrap,
   header,
   row,
   soldOut
-} from "./priceTooltip.styles";
+} from "@/components/price/priceTooltip.styles";
 
 import { COLORS } from "@/styles/theme";
 
@@ -23,23 +23,24 @@ type Props = {
   active?: boolean;
   payload?: any;
   label?: string | number;
-  displaySelected: number[];
-  baseHotel: number;
   hotelMap: Record<number, string>;
-  pinnedIds: number[];
+  view:{
+    baseHotel: number;
+    displaySelected: number[];
+    pinned: number[];
+  }
 };
 
 export default function PriceTooltip({
   active,
   payload,
   label,
-  displaySelected,
-  baseHotel,
+  view,
   hotelMap,
-  pinnedIds
 }: Props) {
   if (!active || !payload?.length) return null;
 
+  const { baseHotel, displaySelected, pinned } = view;
   // ------------------------
   // データ生成
   // ------------------------
@@ -48,8 +49,8 @@ export default function PriceTooltip({
   }, [payload, displaySelected, baseHotel]);
 
   const sorted = useMemo(() => {
-    return sortRows(rows, baseHotel, pinnedIds);
-  }, [rows, baseHotel]);
+    return sortRows(rows, baseHotel, pinned);
+  }, [rows, baseHotel, pinned]);
 
   return (
     <div style={wrap}>
@@ -60,7 +61,7 @@ export default function PriceTooltip({
       {sorted.map((r) => {
         const isBase = r.id === baseHotel;
         const isSoldOut = r.value == null;
-        const isPinned = pinnedIds.includes(r.id);
+        const isPinned = pinned.includes(r.id);
 
         return (
           <div

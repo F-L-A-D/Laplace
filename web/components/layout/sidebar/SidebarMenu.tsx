@@ -5,7 +5,7 @@ import * as s from "@/components/layout/sidebar/sidebarMenu.styles";
 
 type Props = {
   activeMenu: MenuType | null;
-  setActiveMenu: (v: MenuType) => void;
+  setActiveMenu: (v: MenuType | null) => void;
 };
 
 export default function SidebarMenu({
@@ -17,7 +17,13 @@ export default function SidebarMenu({
       {Object.values(MENU).map((m) => (
         <div
           key={m.key}
-          onClick={() => setActiveMenu(m.key)}
+          onClick={() => {
+            if (activeMenu == m.key) {
+              setActiveMenu(null);
+            } else {
+              setActiveMenu(m.key)
+            }
+          }}
           style={s.btn(activeMenu === m.key)}
         >
           {m.label}

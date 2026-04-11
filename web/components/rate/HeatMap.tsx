@@ -1,8 +1,7 @@
 "use client";
 
 import HotelName from "@/components/common/HotelName";
-import SectionTitle from "@/components/common/SectionTitle";
-import { sortHotels } from "@/utils/pinned";
+import SectionHeader from "@/components/common/SectionHeader";
 
 import {
   TABLE,
@@ -16,51 +15,51 @@ import {
 type Props = {
   matrix: any[];
   hotelMap: Record<number, string>;
-  selected: number[];
-  baseHotel: number;
+  columns: (number | null)[];
   year: string;
   month: string;
-  pinnedIds: number[];
+  view: {
+    baseHotel: number;
+    displaySelected: (number | null)[];
+    pinned: number[]
+  };
 };
 
 export default function HeatMap({
   matrix,
   hotelMap,
-  selected,
-  baseHotel,
+  columns,
   year,
   month,
-  pinnedIds
+  view
 }: Props) {
 
   const scale = calcScale(matrix);
-
-  const sorted: (number | null )[] = sortHotels(selected, baseHotel,pinnedIds);
-  const hotels: (number | null )[] = sorted.slice(0, 5);
-  while (hotels.length < 5) hotels.push(null);
+  const { baseHotel } = view;
+  const hotels = columns;
 
   return (
-    <div style={{ overflow: "auto", height: "100%" }}>
-      <div style={{ marginBottom: "4px" }}>
-        <SectionTitle title="HEAT MAP (SCORE)" />
+    <div style={{ height: "100%" }}>
+      
+      <SectionHeader 
+        title="HEAT MAP (SCORE)" 
+        legend={
+          <div style={legendWrap}>
+            <div style={gradientBar} />
 
-        <div style={legendWrap}>
-          <div style={gradientBar} />
-
-          <div style={legendScale}>
-            <span>-{formatScale(scale)}</span>
-            <span>0</span>
-            <span>+{formatScale(scale)}</span>
+            <div style={legendScale}>
+              <span>-{formatScale(scale)}</span>
+              <span>0</span>
+              <span>+{formatScale(scale)}</span>
+            </div>
           </div>
-        </div>
-      </div>
+        }  
+      />
 
       <table style={TABLE}>
 
         <thead>
           <tr>
-            <th style={TH_DAY}>Day</th>
-
             {hotels.map((hid, i) => {
               const isBase = hid === baseHotel;
 
@@ -97,17 +96,13 @@ export default function HeatMap({
                   background: isWeekend ? "#fafafa" : "transparent"
                 }}
               >
-                <td style={TD_DAY}>{row.day}</td>
-
                 {hotels.map((hid, i) => {
-                  const cell = Object.values(row).find(
-                    (c: any) => c?.hotel_id === hid
-                  ) as any | undefined;
+                  const cell = hid ? row.cells?.[String(hid)] : null;
                   const isBase = hid === baseHotel;
 
                   const bg = cell
                     ? scoreToColor(cell.score, scale)
-                    : "transparent";
+                    : "#f3f4f6";
 
                   return (
                     <td
@@ -119,14 +114,14 @@ export default function HeatMap({
                       }}
                       title={cell ? buildTooltip(cell, hotelMap) : "-"}
                     >
-                      {cell && (
+                      {cell ? (
                         <div style={{
                             ...scoreText,
                             color: getTextColor(cell.score)
                           }}>
                           {formatScore(cell.score)}  
                         </div>
-                      )}
+                      ) : "-"}
                     </td>
                   );
                 })}
@@ -184,7 +179,7 @@ function calcScale(matrix: any[]) {
   const scores: number[] = [];
 
   matrix.forEach(row => {
-    Object.values(row).forEach((cell: any) => {
+    Object.values(row.cells || {}).forEach((cell: any) => {
       if (cell && typeof cell === "object") {
         scores.push(cell.score);
       }
@@ -216,12 +211,13 @@ const scoreText = {
   fontVariantNumeric: "tabular-nums"
 }
 const legendWrap = {
-  marginTop: "4px"
+  marginTop: "4px",
+  width: "100%"
 };
 
 const gradientBar = {
   height: "6px",
-  width: "100%",
+  flex: 1,
   borderRadius: "3px",
   background:
     "linear-gradient(to right, rgb(220,0,0), #fff, rgb(0,180,0))"

@@ -1,4 +1,4 @@
-// web/app/api/features/route.ts
+// web/app/api/rakuten/features/route.ts
 
 import { query } from "@/lib/db";
 import { NextResponse } from "next/server";
@@ -19,14 +19,18 @@ export async function GET(req: Request) {
 
   const ids = hotelIds.split(",");
 
-  const start = `${year}-${month}-01`;
-  const lastDay = new Date(
-    Number(year),
-    Number(month),
-    0
-  ).getDate();
+  const start = new Date(Number(year), Number(month) - 1, 1);
+  const end   = new Date(Number(year), Number(month), 1);
 
-  const end = `${year}-${month}-${String(lastDay).padStart(2, "0")}`;
+  const startStr = formatDate(start);
+  const endStr   = formatDate(end);
+
+  function formatDate(d: Date) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
 
   const rows1: any = await query(`
     SELECT MAX(collected_at) as max_collected_at
@@ -42,20 +46,21 @@ export async function GET(req: Request) {
   try{
     const rows2: any = await query(
       `
-      SELECT
-        hotel_id,
-        date,
-        price,
-        score,
-        market_median_diff,
-        hotel_median_diff
-      FROM features
-      WHERE collected_at = ?
-        AND hotel_id IN (${ids.map(() => "?").join(",")})
-        AND date BETWEEN ? AND ?
-      ORDER BY date ASC
+        SELECT
+          hotel_id,
+          DATE_FORMAT(date, '%Y-%m-%d') AS date,
+          price,
+          score,
+          market_median_diff,
+          hotel_median_diff
+        FROM features
+        WHERE collected_at = ?
+          AND hotel_id IN (${ids.map(() => "?").join(",")})
+          AND date >= ?
+          AND date < ?
+        ORDER BY date ASC
       `,
-      [latest, ...ids, start, end]
+      [latest, ...ids, startStr, endStr]
     );
 
     return NextResponse.json(rows2);

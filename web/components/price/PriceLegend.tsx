@@ -7,43 +7,45 @@ import {
   sortLegend,
   splitVisible,
   getLegendState
-} from "./priceLegend.logic";
+} from "@/components/price/priceLegend.logic";
 
 import {
   wrap,
   item,
   dot,
   dropdown
-} from "./priceLegend.styles";
+} from "@/components/price/priceLegend.styles";
 
 import { COLORS } from "@/styles/theme";
 
 type Props = {
   payload?: any;
-  baseHotel: number;
   data: any[];
-  displaySelected: number[];
+  view: {
+    baseHotel: number;
+    displaySelected: number[];
+    pinned: number[];
+  }
+  hotelMap: Record<number, string>;
   hoveredId: number | null;
   setHoveredId: (v: number | null) => void;
-  pinnedIds: number[];
   onTogglePin: (id: number) => void;
-  hotelMap: Record<number, string>;
 };
 
 export default function PriceLegend({
   payload,
-  baseHotel,
   data,
-  displaySelected,
+  view,
+  hotelMap,
   hoveredId,
   setHoveredId,
-  pinnedIds,
-  onTogglePin,
-  hotelMap
+  onTogglePin
 }: Props) {
   const [showAll, setShowAll] = useState(false);
+  const VISIBLE_COUNT = 5;
+  const { baseHotel, displaySelected, pinned } = view; 
 
-  if (!payload || !data?.length) return null;
+  if (!data?.length || !displaySelected.length) return null;
 
   // ------------------------
   // データ生成
@@ -53,17 +55,16 @@ export default function PriceLegend({
   }, [displaySelected, payload, data, hotelMap]);
 
   const sorted = useMemo(() => {
-    return sortLegend(merged, baseHotel, pinnedIds);
-  }, [merged, baseHotel, pinnedIds]);
+    return sortLegend(merged, baseHotel, pinned);
+  }, [merged, baseHotel, pinned]);
 
   const { visible, hidden } = useMemo(() => {
-    return splitVisible(sorted, 5);
-  }, [sorted]);
+    return splitVisible(sorted, VISIBLE_COUNT);
+  }, [sorted, VISIBLE_COUNT]);
 
   const handleClick = (id: number) => {
-    if (id !== baseHotel){
-      onTogglePin(id);
-    }
+    if (id === baseHotel) return;
+    onTogglePin(id);
   };
 
   const handleHover = (id: number) => {
@@ -77,12 +78,15 @@ export default function PriceLegend({
   return (
     <div
       style={wrap}
-      onMouseLeave={handleLeave}
+      onMouseLeave={() => {
+        handleLeave();
+        setShowAll(false);
+      }}
     >
       {/* ===== visible ===== */}
       {visible.map((entry) => {
         const { isBase, isPinned, isDimmed } =
-          getLegendState(entry.id, baseHotel, hoveredId, pinnedIds);
+          getLegendState(entry.id, baseHotel, hoveredId, pinned);
 
         return (
           <div

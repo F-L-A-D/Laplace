@@ -2,33 +2,33 @@
 
 import { useMemo } from "react";
 import HotelName from "@/components/common/HotelName";
-import SectionTitle from "@/components/common/SectionTitle";
+import SectionHeader from "@/components/common/SectionHeader";
 
 import { sortHotels } from "@/utils/pinned";
+import { getRowBg } from "@/utils/ui";
+
 import {
   buildSoldOutMap,
   buildSoldOutRows
 } from "./soldout.logic";
 
-import { getRowBg } from "@/utils/ui";
-
-
 type Props = {
   data: any[];
-  displaySelected: number[];
   hotelMap: Record<number, string>;
-  baseHotel: number;
-  pinnedIds: number[];
+  view:{
+    baseHotel: number;
+    displaySelected: number[];
+    pinned: number[];
+  }
 };
 
 export default function SoldOutTable({
   data,
-  displaySelected,
   hotelMap,
-  baseHotel,
-  pinnedIds
+  view
 }: Props) {
 
+  const { baseHotel, displaySelected, pinned } = view;
   // ------------------------
   // 集計
   // ------------------------
@@ -40,8 +40,8 @@ export default function SoldOutTable({
   // 並び統一
   // ------------------------
   const sorted = useMemo(() => {
-    return sortHotels(displaySelected, baseHotel, pinnedIds);
-  }, [displaySelected, baseHotel, pinnedIds]);
+    return sortHotels(displaySelected, baseHotel, pinned);
+  }, [displaySelected, baseHotel, pinned]);
 
   // ------------------------
   // 行生成
@@ -52,7 +52,7 @@ export default function SoldOutTable({
 
   return (
     <>
-      <SectionTitle title="SOLD OUT RATE" />
+      <SectionHeader title="SOLD OUT RATE" />
 
       <table style={table}>
         <thead>
@@ -81,7 +81,7 @@ export default function SoldOutTable({
               <tr
                 key={key}
                 style={{
-                  background: getRowBg(r.id, baseHotel, pinnedIds)
+                  background: getRowBg(r.id, baseHotel, pinned)
                 }}
               >
                 <td>

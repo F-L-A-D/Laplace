@@ -1,45 +1,34 @@
-"use client";
-
 import { useEffect, useState } from "react";
+import { fetchPrices } from "@/data/prices";
 
 export function usePrices(
-  selected: number[],
+  ids: number[],
   year: string,
-  month: string
-) {
+  month: string,
+  layer: string
+){
   const [data, setData] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!selected.length) return;
+    if (!ids.length) {
+      setData([]);
+      return;
+    }
 
-    const lastDay = new Date(
-      Number(year),
-      Number(month),
-      0
-    ).getDate();
+    let cancelled = false;
 
-    const start = `${year}-${month}-01`;
-    const end = `${year}-${month}-${String(lastDay).padStart(2, "0")}`;
-
-    fetch(
-      `/api/prices?hotel_ids=${selected.join(",")}&start_date=${start}&end_date=${end}`
-    )
+    fetchPrices(layer, { ids, year, month })
       .then(res => res.json())
-      .then(json => {
-        const grouped: any = {};
-
-        json.forEach((r: any) => {
-          const date = new Date(r.date)
-            .toLocaleDateString("sv-SE");
-
-          if (!grouped[date]) grouped[date] = { date };
-
-          grouped[date][`hotel_${r.hotel_id}`] = r.price;
-        });
-
-        setData(Object.values(grouped));
+      .then(d => {
+        if (!cancelled) setData(d);
+      })
+      .catch(() => {
+        if (cancelled) setData([]);
       });
-  }, [selected, year, month]);
+    return() => {
+      cancelled = true;
+    };
+  }, [ids, year, month, layer]);
 
   return data;
 }

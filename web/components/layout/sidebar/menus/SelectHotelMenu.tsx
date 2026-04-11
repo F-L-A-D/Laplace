@@ -11,57 +11,64 @@ type Hotel = {
 type Props = {
   hotels: Hotel[];
   selected: number[];
-  setSelected: React.Dispatch<React.SetStateAction<number[]>>;
   baseHotel: number;
   hotelMap: Record<number, string>;
   pinnedIds: number[];
+  onAdd: (id: number) => void;
+  onRemove: (id: number) => void;
 };
 
 export default function SelectHotelMenu({
   hotels,
   selected,
-  setSelected,
   baseHotel,
   hotelMap,
-  pinnedIds
+  pinnedIds,
+  onAdd,
+  onRemove
 }: Props) {
   const [keyword, setKeyword] = useState("");
 
+  const selectedSet = useMemo(() => new Set(selected), [selected]);
+  const pinnedSet = useMemo(() => new Set(pinnedIds), [pinnedIds]);
+
   const filtered = useMemo(() => {
+    const k = keyword.toLowerCase();
     return hotels.filter(h =>
-      h.name.toLowerCase().includes(keyword.toLowerCase())
+      h.name.toLowerCase().includes(k)
     );
   }, [hotels, keyword]);
 
-  // 🧠 グループ分割（これが正解）
+  // -------- grouping --------
   const base = filtered.find(h => h.id === baseHotel);
 
   const pinned = filtered.filter(
-    h => pinnedIds.includes(h.id) && h.id !== baseHotel
+    h => pinnedSet.has(h.id) && h.id !== baseHotel
   );
 
   const selectedItems = filtered.filter(
     h =>
-      selected.includes(h.id) &&
-      !pinnedIds.includes(h.id) &&
+      selectedSet.has(h.id) &&
+      !pinnedSet.has(h.id) &&
       h.id !== baseHotel
   );
 
   const others = filtered.filter(
     h =>
-      !selected.includes(h.id) &&
-      !pinnedIds.includes(h.id) &&
+      !selectedSet.has(h.id) &&
+      !pinnedSet.has(h.id) &&
       h.id !== baseHotel
   );
 
+  // -------- action --------
   const toggle = (id: number) => {
     if (id === baseHotel) return;
 
-    setSelected(prev =>
-      prev.includes(id)
-        ? prev.filter(x => x !== id)
-        : [id, ...prev]
-    );
+    if (selectedSet.has(id)) {
+      onRemove(id);
+    } else {
+      onAdd(id);
+    }
   };
 
   return (
@@ -75,8 +82,8 @@ export default function SelectHotelMenu({
         style={search}
       />
 
-      <div style={list} className="modal-scroll">
-
+      <div style={list}>
+        
         {/* BASE */}
         {base && (
           <>
@@ -99,7 +106,7 @@ export default function SelectHotelMenu({
                 key={h.id}
                 id={h.id}
                 hotelMap={hotelMap}
-                checked={selected.includes(h.id)}
+                checked={selectedSet.has(h.id)}
                 isPinned
                 onClick={() => toggle(h.id)}
               />
@@ -134,7 +141,6 @@ export default function SelectHotelMenu({
             onClick={() => toggle(h.id)}
           />
         ))}
-
       </div>
     </div>
   );

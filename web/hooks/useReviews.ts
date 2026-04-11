@@ -1,53 +1,43 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { fetchReviews } from "@/data/reviews";
 
 type Review = {
+  hotel_id: number;
   score: number;
-  review_count: number;
+  review_count: number
 };
 
-export function useReviews(ids: number[]) {
+export function useReviews(
+  ids: number[],
+  layer: string
+){
   const [data, setData] = useState<Record<number, Review>>({});
-  const key = useMemo(() => ids.join(","), [ids]);
 
   useEffect(() => {
-    if (!key) {
+    if (!ids.length) {
       setData({});
       return;
     }
 
-    const controller = new AbortController();
+    let cancelled = false;
 
-    const fetchData = async () => {
-      try {
-        const res = await fetch(
-          `/api/reviews?hotel_ids=${key}`,
-          { signal: controller.signal }
-        );
-
-        const rows = await res.json();
-
+    fetchReviews(layer, { ids })
+      .then(res => res.json())
+      .then((rows: Review[]) => {
+        if (cancelled) return;
         const map: Record<number, Review> = {};
-
-        rows.forEach((r: any) => {
-          map[r.hotel_id] = {
-            score: r.score,
-            review_count: r.review_count
-          };
+        rows.forEach(r => {
+          map[r.hotel_id] = r;
         });
-
         setData(map);
-      } catch (e: any) {
-        if (e.name === "AbortError") return;
-        console.error(e);
-      }
+      })
+      .catch(() => {
+        if (!cancelled) setData({});
+      });
+    return() => {
+      cancelled = true;
     };
-
-    fetchData();
-
-    return () => {
-      controller.abort();
-    };
-  }, [key]);
+  }, [ids, layer]);
 
   return data;
 }

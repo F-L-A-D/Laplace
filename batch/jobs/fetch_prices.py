@@ -10,7 +10,7 @@ def run(source_id, collected_at):
     config = SOURCE_CONFIG.get(source_id, {})
     label = config.get("label", f"ID={source_id}")
 
-    print(f"[FETCH PRICES] SOURCE={label}")
+    print(f"[FETCH PRICES] SOURCE: {label}")
     is_monday = datetime.today().weekday() == 0
     
     data = run_source(source_id)

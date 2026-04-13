@@ -6,7 +6,8 @@ DATE_CHUNK = 30
 DEBUG = os.getenv("DEBUG") == "1"
 
 SOURCE_CONFIG = {
-    1: { #楽天
+    1: {
+        "label": "RAKUTEN",
         "min_interval": 0.8,
         "max_hotels": 15
     }

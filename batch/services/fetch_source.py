@@ -42,6 +42,7 @@ def run_source(source_id):
     start_time = time.time()
     is_monday = datetime.today().weekday() == 0
     config = SOURCE_CONFIG.get(source_id, {})
+    label = config.get("label", f"ID={source_id}")
     min_interval = config.get("min_interval", 0.8)
 
     limiter = RateLimiter(min_interval)
@@ -64,7 +65,7 @@ def run_source(source_id):
         hotels = [h for h in hotels if h["hotel_id"] == target_hotel_id]
 
     days = get_target_days()
-    print(f"[BATCH START] SOURCE_ID={source_id} | DATE COUNT: {days}")
+    print(f"[BATCH START] SOURCE: {label} | DATE COUNT: {days}")
 
     all_results = {}
 
@@ -91,7 +92,7 @@ def run_source(source_id):
 
             merge(all_results, daily_results)
 
-    print(f"[BATCH END] SOURCE_ID={source_id} | TOTAL TIME: {time.time() - start_time:.2f}s")
-    print(f"[BATCH END] SOURCE_ID={source_id} | CLEAN HIT RATE: {collector.hit_rate():.2%}")
+    print(f"[BATCH END] SOURCE: {label} | TOTAL TIME: {time.time() - start_time:.2f}s")
+    print(f"[BATCH END] SOURCE: {label} | CLEAN HIT RATE: {collector.hit_rate():.2%}")
 
     return all_results

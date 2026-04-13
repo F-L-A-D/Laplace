@@ -23,32 +23,51 @@ def execute_write(sql, data=None, many=False, label=""):
     finally:
         conn.close()
 
-def save_prices(hotel_results, collected_at):
+def save_prices(hotel_results, source_id, collected_at):
     price_data = []
 
     for hotel_id, rows in hotel_results.items():
         for row in rows:
             d = row["date"]
-            p = row["price"]
-            status = "available" if p is not None else "sold_out"
+            p_min = row["price_min"]
+            
+            status = "available" if p_min is not None else "sold_out"
 
-            price_data.append(
-                (hotel_id, 1, d, p, status, collected_at)
-            )
+            price_data.append((
+                hotel_id, 
+                source_id,
+                d, 
+                p_min, 
+                row["price_max"],
+                row["room_min_class"],
+                row["room_max_class"],
+                row["room_min_name"],
+                row["room_max_name"],
+                row["plan_min_id"],
+                row["plan_max_id"],
+                row["plan_min_name"],
+                row["plan_max_name"],
+                status, 
+                collected_at
+            ))
 
     if not price_data:
         return
 
     sql = """
         INSERT INTO prices (
-            hotel_id, source_id, date, price, status, collected_at
+            hotel_id, source_id, date, 
+            price_min, price_max, 
+            room_min_class, room_max_class, room_min_name, room_max_name,
+            plan_min_id, plan_max_id, plan_min_name, plan_max_name,
+            status, collected_at
         )
-        VALUES (%s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
 
     execute_write(sql, price_data, many=True, label="PRICES")
 
-def save_reviews(hotel_results, collected_at):
+def save_reviews(hotel_results, source_id, collected_at):
     review_data = []
 
     for hotel_id, rows in hotel_results.items():
@@ -57,7 +76,7 @@ def save_reviews(hotel_results, collected_at):
                 review_data.append(
                     (
                         hotel_id,
-                        1,
+                        source_id,
                         row["review_avg"],
                         row["review_count"],
                         collected_at
@@ -80,7 +99,7 @@ def save_reviews(hotel_results, collected_at):
 
     execute_write(sql, review_data, many=True, label="REVIEWS")
 
-def save_features(features, collected_at, source_id=1):
+def save_features(features, source_id, collected_at):
     data = []
 
     for row in features:
@@ -134,35 +153,49 @@ def save_features(features, collected_at, source_id=1):
 
     execute_write(sql, data, many=True, label="FEATURES")
 
-def save_pickups(collected_at):
+def save_pickups(source_id, collected_at):
+    
     sql = """
         INSERT INTO pickups (
             hotel_id,
             source_id,
             date,
             collected_at,
-            price_latest,
-            price_prev,
-            is_latest_null,
-            is_prev_null,
-            pickup_7d
+            price_min_latest,
+            price_min_prev,
+            is_min_latest_null,
+            is_min_prev_null,
+            pickup_min_7d,
+            price_max_latest,
+            price_max_prev,
+            is_max_latest_null,
+            is_max_prev_null,
+            pickup_max_7d
         )
         SELECT
             hotel_id,
-            source_id,
+            %s,
             date,
             latest_collected_at,
-            price_latest,
-            price_prev,
-            is_latest_null,
-            is_prev_null,
-            pickup_7d
+            price_min_latest,
+            price_min_prev,
+            is_min_latest_null,
+            is_min_prev_null,
+            pickup_min_7d,
+            price_max_latest,
+            price_max_prev,
+            is_max_latest_null,
+            is_max_prev_null,
+            pickup_max_7d
         FROM pickup_view
         WHERE latest_collected_at = %s
         ON DUPLICATE KEY UPDATE
-            price_latest = VALUES(price_latest),
-            price_prev   = VALUES(price_prev),
-            pickup_7d    = VALUES(pickup_7d)
+            price_min_latest   = VALUES(price_min_latest),
+            price_min_prev     = VALUES(price_min_prev),
+            pickup_min_7d      = VALUES(pickup_min_7d),
+            price_max_latest   = VALUES(price_max_latest),
+            price_max_prev     = VALUES(price_max_prev),
+            pickup_max_7d      = VALUES(pickup_max_7d)
     """
 
-    execute_write(sql, (collected_at,), label="PICKUPS")
+    execute_write(sql, (source_id, collected_at,), label="PICKUPS")

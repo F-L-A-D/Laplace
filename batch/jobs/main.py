@@ -8,13 +8,16 @@ from utils.config import DEBUG
 from datetime import datetime
 
 def main():
-    collected_at = datetime.now()
+    collected_at = datetime.now().replace(microsecond=0)
     run_mode = "DEBUG" if DEBUG else "MAIN"
+    print(f"[{run_mode} MODE] COLLECTED_AT = {collected_at}")
+
+    source_ids = [1]
     
-    print(f"[{run_mode} MODE]")
-    run_fetch(collected_at)
-    run_features(collected_at)
-    run_pickups(collected_at)
+    for source_id in source_ids:
+        run_fetch(source_id=source_id, collected_at=collected_at)
+        run_features(source_id=source_id, collected_at=collected_at)
+        run_pickups(source_id=source_id, collected_at=collected_at)
 
 if __name__ == "__main__":
     main()

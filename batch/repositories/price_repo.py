@@ -2,12 +2,12 @@
 
 from lib.db import get_connection
 
-def fetch_prices_latest(source_id=1):
+def fetch_prices_latest(source_id):
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT p.hotel_id, p.date, p.price
+        SELECT p.hotel_id, p.date, p.price_min AS price
         FROM prices p
         JOIN (
             SELECT hotel_id, date, source_id, MAX(collected_at) AS max_ca

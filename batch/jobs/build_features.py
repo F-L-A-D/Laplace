@@ -7,22 +7,21 @@ from services.build_features import calc_features
 from writers.db_writer import save_features
 
 import pandas as pd
-from datetime import datetime
 
-def run(collected_at):
-    print("[BUILD FEATURES]")
-    rows = fetch_prices_latest(source_id=1)
+def run(source_id, collected_at):
+    print(f"[BUILD FEATURES] SOURCE_ID={source_id}")
+    rows = fetch_prices_latest(source_id=source_id)
     grouped = group_by_date(rows)
     features = calc_features(grouped)
     df = pd.DataFrame(features)
 
     if DEBUG:
-        print("[DEBUG] FEATURES")
+        print(f"[DEBUG] FEATURES SOURCE_ID={source_id}")
         print(df.head(10))
         return
     
-    save_features(df.to_dict("records"), collected_at, source_id=1)
-    print("[SAVED FEATURES]")
+    save_features(features=df.to_dict("records"), source_id=source_id, collected_at=collected_at)
+    print(f"[SAVED FEATURES] SOURCE_ID={source_id}")
     
     return
 

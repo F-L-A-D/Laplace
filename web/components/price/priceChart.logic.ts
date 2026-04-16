@@ -1,27 +1,21 @@
 export function calcBaseRange(data: any[], baseHotel: number) {
-  const values = data
-    .filter(d => d.hotel_id === baseHotel)
-    .map(d => d.price)
-    .filter(v => v != null);
+  if (!Array.isArray(data) || !data.length) return { baseMin: 0, baseMax: 100, safeMin: 0, safeMax: 100 };
 
-  if (!values.length) {
-    return {
-      baseMin: 0,
-      baseMax: 100,
-      safeMin: 0,
-      safeMax: 100
-    };
-  }
+  const allPriceMins = data.map(d => d.price_min).filter(v => v != null);
+  
+  const marketMin = Math.min(...allPriceMins);
+  const marketMax = Math.max(...allPriceMins);
 
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const range = max - min || 1000;
+  const baseMins = data.filter(d => d.hotel_id === baseHotel).map(d => d.price_min);
+  const baseMin = baseMins.length ? Math.min(...baseMins) : marketMin;
+
+  const range = marketMax - marketMin || 10000;
 
   return {
-    baseMin: min,
-    baseMax: max,
-    safeMin: min - range * 0.1,
-    safeMax: max + range * 0.1
+    baseMin: baseMin,
+    baseMax: marketMax,
+    safeMin: Math.max(0, marketMin - range * 0.1),
+    safeMax: marketMax + range * 0.2
   };
 }
 
@@ -56,12 +50,13 @@ export function getStroke(
   colors: string[],
   baseColor: string
 ) {
-  const latest = data
+
+  const latestPrice = data
     .filter(d => d.hotel_id === id)
-    .at(-1)?.price;
+    .at(-1)?.price_min;
 
   const isOutOfRange =
-    latest != null && (latest < baseMin || latest > baseMax);
+    latestPrice != null && (latestPrice < baseMin || latestPrice > baseMax);
 
   if (isOutOfRange) return "#dc2626";
   if (id === baseHotel) return baseColor;

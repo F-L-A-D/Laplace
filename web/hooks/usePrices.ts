@@ -1,16 +1,12 @@
+//web/hooks/usePrices.ts
+
 import { useEffect, useState } from "react";
 import { fetchPrices } from "@/data/prices";
 import { QueryParams } from "@/types/query";
 
-export function usePrices({
-  ids = [],
-  year,
-  month,
-  source_id,
-  layer,
-}: QueryParams){
+export function usePrices({ ids = [], year, month, source_id, layer = "raw" }: QueryParams) {
   const [data, setData] = useState<any[]>([]);
-  
+
   useEffect(() => {
     if (!ids.length) {
       setData([]);
@@ -19,21 +15,18 @@ export function usePrices({
 
     let cancelled = false;
 
-    fetchPrices({ 
-      ids, 
-      year,
-      month,
-      source_id,
-      layer
-    })
-      .then(res => res.json())
-      .then(d => {
-        if (!cancelled) setData(d);
+    fetchPrices({ ids, year, month, source_id, layer })
+      .then((res) => res.json())
+      .then((d: any[]) => {
+        if (!cancelled) {
+          setData(d); 
+        }
       })
       .catch(() => {
-        if (cancelled) setData([]);
+        if (!cancelled) setData([]);
       });
-    return() => {
+
+    return () => {
       cancelled = true;
     };
   }, [ids, year, month, source_id, layer]);

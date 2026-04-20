@@ -40,7 +40,7 @@ def process_batch(collector, hotels, checkin, checkout, should_get_review, sourc
 
 def run_source(source_id):
     start_time = time.time()
-    is_monday = datetime.today().weekday() == 0
+    is_monday = True # datetime.today().weekday() == 0
     config = SOURCE_CONFIG.get(source_id, {})
     label = config.get("label", f"ID={source_id}")
     min_interval = config.get("min_interval", 0.8)
@@ -68,27 +68,30 @@ def run_source(source_id):
     print(f"[BATCH START] SOURCE: {label} | DATE COUNT: {days}")
 
     all_results = {}
+    updated_hotel_ids = set()
 
     for offset in range(1, days + 1, DATE_CHUNK):
         count = min(DATE_CHUNK, days - offset + 1)
         date_pairs = build_dates(offset, count)
 
         for checkin, checkout in date_pairs:
-            is_first_day = (offset == 1 and checkin == date_pairs[0][0])
+            can_fetch_review = is_monday and len(updated_hotel_ids) < len(hotels)
             
-            if DEBUG:
-                should_get_review = True
-            else:
-                should_get_review = is_monday and is_first_day
-
             daily_results = process_batch(
-                collector,
-                hotels,
-                checkin,
-                checkout,
-                should_get_review,
-                source_id
-            )
+                            collector,
+                            hotels,
+                            checkin,
+                            checkout,
+                            can_fetch_review,
+                            source_id
+                        )
+                        
+            if can_fetch_review:
+                for h_id, data_list in daily_results.items():
+                    if data_list:
+                        first_entry = data_list[0]
+                        if first_entry.get("review_avg") is not None:
+                            updated_hotel_ids.add(h_id)
 
             merge(all_results, daily_results)
 

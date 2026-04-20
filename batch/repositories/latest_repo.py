@@ -2,7 +2,7 @@
 
 from lib.db import get_connection
 
-def fetch_collected_latest(source_id=1):
+def fetch_collected_latest(source_id):
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -17,4 +17,4 @@ def fetch_collected_latest(source_id=1):
     return rows[0]["latest"]
 
 if __name__ == "__main__":
-    fetch_collected_latest()
+    fetch_collected_latest(source_id=1)

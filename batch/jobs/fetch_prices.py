@@ -1,6 +1,6 @@
 #batch/jobs/fetch_prices.py
 
-from services.fetch_source import run_source
+from services.sources import run_source
 from writers.db_writer import save_prices, save_reviews
 from utils.config import SOURCE_CONFIG, DEBUG
 
@@ -11,7 +11,7 @@ def run(source_id, collected_at):
     label = config.get("label", f"ID={source_id}")
 
     print(f"[FETCH PRICES] SOURCE: {label}")
-    is_monday = datetime.today().weekday() == 0
+    is_monday = True
     
     data = run_source(source_id)
 

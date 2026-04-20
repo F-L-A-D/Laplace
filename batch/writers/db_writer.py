@@ -1,6 +1,7 @@
 #batch/writers/db_writer.py
 
 from lib.db import get_connection
+import json
 
 def execute_write(sql, data=None, many=False, label=""):
     conn = get_connection()
@@ -30,7 +31,6 @@ def save_prices(hotel_results, source_id, collected_at):
         for row in rows:
             d = row["date"]
             p_min = row["price_min"]
-            
             status = "available" if p_min is not None else "sold_out"
 
             price_data.append((
@@ -67,6 +67,108 @@ def save_prices(hotel_results, source_id, collected_at):
 
     execute_write(sql, price_data, many=True, label="PRICES")
 
+def save_features(features, source_id, collected_at):
+    data = []
+
+    for row in features:
+        data.append((
+            row["hotel_id"],
+            source_id,
+            row.get("cluster_id"),
+            row["date"],
+            row["price"],
+            
+            row["market_index"],
+            row["market_median"],
+            row["market_median_diff"],
+            
+            row["price_rank"],
+            row["percentile"],
+            row["z_score"],
+
+            row["hotel_base_price"],
+            row["expected_diff"],
+
+            row["score"],
+            json.dumps(row["weights"]),
+            collected_at
+        ))
+
+    if not data:
+        return
+
+    sql = """
+        INSERT INTO features (
+            hotel_id, source_id, cluster_id, date, price,
+            market_median, market_index, market_median_diff,
+            price_rank, percentile, z_score,
+            hotel_base_price, expected_diff,
+            score, weights, collected_at
+        )
+        VALUES (
+            %s, %s, %s, %s, %s,
+            %s, %s, %s,
+            %s, %s, %s,
+            %s, %s,
+            %s, %s, %s
+        )
+    """
+
+    execute_write(sql, data, many=True, label="FEATURES")
+
+
+def save_normalized_stats(stats, source_id, collected_at):
+    data = []
+
+    for row in stats:
+        data.append((
+            source_id,
+            row["date"],
+            row["market_median"],
+            row["market_index"],
+            row["area_base_median"],
+            row["market_log_mean"],
+            row["market_log_std"],
+            row["std_m"],
+            row["std_h"],
+            row["std_z"],
+            collected_at
+        ))
+
+    if not data:
+        return
+
+    sql = """
+        INSERT INTO normalized_prices (
+            source_id,
+            date,
+            market_median,
+            market_index,
+            area_base_median,
+            market_log_mean,
+            market_log_std,
+            std_m,
+            std_h,
+            std_z,
+            collected_at
+        )
+        VALUES (
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+        )
+        ON DUPLICATE KEY UPDATE
+            market_median = VALUES(market_median),
+            market_index = VALUES(market_index),
+            area_base_median = VALUES(area_base_median),
+            market_log_mean = VALUES(market_log_mean),
+            market_log_std = VALUES(market_log_std),
+            std_m = VALUES(std_m),
+            std_h = VALUES(std_h),
+            std_z = VALUES(std_z),
+            collected_at = VALUES(collected_at)
+    """
+
+    execute_write(sql, data, many=True, label="NORMALIZED_PRICES")
+
 def save_reviews(hotel_results, source_id, collected_at):
     review_data = []
 
@@ -99,59 +201,6 @@ def save_reviews(hotel_results, source_id, collected_at):
 
     execute_write(sql, review_data, many=True, label="REVIEWS")
 
-def save_features(features, source_id, collected_at):
-    data = []
-
-    for row in features:
-        data.append((
-            row["hotel_id"],
-            source_id,
-            row["date"],
-            row["price"],
-
-            row["market_median"],
-            row["market_median_diff"],
-            
-            row["price_rank"],
-            row["percentile"],
-            row["z_score"],
-
-            row["hotel_median"],
-            row["hotel_median_diff"],
-
-            row["score"],
-            collected_at
-        ))
-
-    if not data:
-        return
-
-    sql = """
-        INSERT INTO features (
-            hotel_id,
-            source_id,
-            date,
-            price,
-            market_median,
-            market_median_diff,
-            price_rank,
-            percentile,
-            z_score,
-            hotel_median,
-            hotel_median_diff,
-            score,
-            collected_at
-        )
-        VALUES (
-            %s, %s, %s, %s,
-            %s, %s, %s, %s, %s,
-            %s, %s,
-            %s,
-            %s
-        )
-    """
-
-    execute_write(sql, data, many=True, label="FEATURES")
 
 def save_pickups(source_id, collected_at):
     
@@ -199,3 +248,44 @@ def save_pickups(source_id, collected_at):
     """
 
     execute_write(sql, (source_id, collected_at,), label="PICKUPS")
+
+def save_positioning(source_id, collected_at, rows):
+    if not rows:
+        return
+
+    query = """
+    INSERT INTO positioning (
+        hotel_id,
+        source_id,
+        date,
+        collected_at,
+        geo_cluster,
+        structural,
+        market_fit,
+        strategy,
+        responsiveness
+    )
+    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+    ON DUPLICATE KEY UPDATE
+        structural = VALUES(structural),
+        market_fit = VALUES(market_fit),
+        strategy = VALUES(strategy),
+        responsiveness = VALUES(responsiveness)
+    """
+
+    data = [
+        (
+            r["hotel_id"],
+            source_id,
+            r["date"],
+            collected_at,
+            r.get("geo_cluster"),
+            r["structural"],
+            r["market_fit"],
+            r["strategy"],
+            r["responsiveness"],
+        )
+        for r in rows
+    ]
+
+    execute_write(query, data, many=True, label="POSITIONING")

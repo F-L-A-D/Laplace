@@ -19,6 +19,7 @@ def fetch_prices_latest(source_id):
         AND p.source_id = latest.source_id
         AND p.collected_at = latest.max_ca
         WHERE p.source_id = %s
+        AND p.lead_time >= 0
     """, (source_id,))
 
     rows = cursor.fetchall()

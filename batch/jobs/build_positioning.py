@@ -55,9 +55,9 @@ def run(source_id, collected_at):
             **pos
         })
     
-    save_positioning(source_id=source_id, collected_at=collected_at, rows=results)
+    save_positioning(source_id, collected_at, results)
 
 if __name__ == "__main__":
     source_id = 1
-    collected_at = fetch_collected_latest(source_id=source_id)
-    run(source_id=source_id, collected_at=collected_at)
+    collected_at = fetch_collected_latest(source_id)
+    run(source_id, collected_at)

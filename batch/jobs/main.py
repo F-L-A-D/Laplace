@@ -3,6 +3,7 @@
 from jobs.fetch_prices import run as run_fetch
 from jobs.build_features import run as run_features
 from jobs.calc_pickups import run as run_pickups
+from jobs.build_positioning import run as run_positioning
 from utils.config import DEBUG
 
 from datetime import datetime
@@ -18,6 +19,7 @@ def main():
         run_fetch(source_id=source_id, collected_at=collected_at)
         run_features(source_id=source_id, collected_at=collected_at)
         run_pickups(source_id=source_id, collected_at=collected_at)
+        run_positioning(source_id=source_id, collected_at=collected_at)
 
 if __name__ == "__main__":
     main()

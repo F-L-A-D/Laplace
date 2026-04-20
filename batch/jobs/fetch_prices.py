@@ -20,12 +20,14 @@ def run(source_id, collected_at):
         print(data[:10])
         return
 
-    save_prices(hotel_results=data, source_id=source_id, collected_at=collected_at)
+    save_prices(data, source_id, collected_at)
     print(f"[SAVED PRICES] SOURCE: {label}")
 
     if is_monday:
-        save_reviews(hotel_results=data, source_id=source_id, collected_at=collected_at)
+        save_reviews(data, source_id, collected_at)
         print(f"[SAVED REVIEWS] SOURCE: {label}")
 
 if __name__ == "__main__":
-    run()
+    source_id = 1
+    collected_at = datetime.now().replace(microsecond=0)
+    run(source_id, collected_at)

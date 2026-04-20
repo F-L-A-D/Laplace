@@ -1,6 +1,7 @@
 #batch/jobs/build_features.py
 
 from repositories.price_repo import fetch_prices_latest
+from repositories.latest_repo import fetch_collected_latest
 from utils.transform import group_by_date
 from utils.config import SOURCE_CONFIG, DEBUG
 from services.features import calc_features
@@ -33,4 +34,6 @@ def run(source_id, collected_at):
     print(f"[SUCCESS] SOURCE: {label}")
 
 if __name__ == "__main__":
-    run()
+    source_id = 1
+    collected_at = fetch_collected_latest(source_id)
+    run(source_id, collected_at)

@@ -11,13 +11,14 @@ def run(source_id, collected_at):
     label = config.get("label", f"ID={source_id}")
 
     print(f"[FETCH PRICES] SOURCE: {label}")
-    is_monday = True
+    today = datetime.today()
+    is_monday = today.weekday() == 0
     
     data = run_source(source_id)
 
     if DEBUG:
         print(f"[DEBUG] PRICES SOURCE: {label}")
-        print(data[:10])
+        print(data)
         return
 
     save_prices(data, source_id, collected_at)

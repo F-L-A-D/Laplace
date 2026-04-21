@@ -16,12 +16,16 @@ def build_stats(df: pd.DataFrame) -> dict:
 
     # ---- structural ----
     df["structural_raw"] = (
-        0.5 * np.log(df["hotel_base_price"].clip(lower=1))
-        + 0.5 * (df["review_score"] * np.log1p(df["review_count"]))
-    )
+            0.8 * (df["hotel_base_price"] / 10000.0) +
+            0.4 * df["review_score"] +
+            0.1 * np.log1p(df["review_count"])
+        )
 
     # ---- spread ----
     df["spread"] = np.log(df["price_max"] / df["price_min"])
+
+    market_pickup_avg = df["pickup_min_7d"].mean()
+    market_pickup_std = df["pickup_min_7d"].std() or 0.05
 
     return {
         "structural_mean": df["structural_raw"].mean(),
@@ -31,6 +35,9 @@ def build_stats(df: pd.DataFrame) -> dict:
         "spread_std": df["spread"].std() or 1,
 
         "market_volatility": df["d_market"].std() or 1,
+
+        "market_pickup_avg": float(market_pickup_avg),
+        "market_pickup_std": float(market_pickup_std)
     }
 
 

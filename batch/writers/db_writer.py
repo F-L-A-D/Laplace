@@ -289,3 +289,29 @@ def save_positioning(source_id, collected_at, rows):
     ]
 
     execute_write(query, data, many=True, label="POSITIONING")
+
+def save_strategic_logs(logs):
+    if not logs:
+        return
+
+    sql = """
+        REPLACE INTO hotel_strategic_logs (
+            hotel_id, 
+            cluster_id, 
+            structural, 
+            responsiveness,
+            market_fit,  
+            strategy, 
+            collected_at
+        ) VALUES (
+            %(hotel_id)s, 
+            %(cluster_id)s, 
+            %(structural)s, 
+            %(responsiveness)s,
+            %(market_fit)s,     
+            %(strategy)s, 
+            %(collected_at)s
+        )
+    """
+
+    execute_write(sql=sql, data=logs, many=True, label="STRATEGIC")

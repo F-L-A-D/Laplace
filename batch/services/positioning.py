@@ -10,11 +10,12 @@ def squash(x):
 
 # ---------- Axis1: structural ----------
 def calc_structural(row, stats):
-    raw = (
-        0.5 * np.log(max(row["hotel_base_price"], 1))
-        + 0.5 * (row["review_score"] * np.log1p(row["review_count"]))
-    )
+    price_term = 0.8 * (row["hotel_base_price"] / 10000.0)
 
+    score_term = 0.4 * row["review_score"]
+    count_term = 0.1 * np.log1p(row["review_count"])
+    
+    raw = price_term + score_term + count_term
     z = safe_z(raw, stats["structural_mean"], stats["structural_std"])
     return squash(z)
 
@@ -47,16 +48,18 @@ def calc_strategy(row, stats):
 
 # ---------- Axis4: responsiveness ----------
 def calc_responsiveness(row, stats):
-    d_market = row.get("d_market", 0)
-    d_self = row.get("d_price", 0)
+    self_delta = row.get("pickup_min_7d")
+    market_avg = stats.get("market_pickup_avg", 0) or 0
 
-    scale = stats["market_volatility"] or 1
-
-    direction = np.sign(d_market) * np.sign(d_self)
-    strength = np.tanh(abs(d_market) / scale)
-
-    raw = direction * strength
-    return squash(raw)
+    if self_delta is None:
+        return None
+    
+    if abs(market_avg) < 0.01:
+        return squash(self_delta * 10)
+    
+    raw_score = self_delta * np.sign(market_avg)
+    
+    return squash(raw_score)
 
 
 def calc_position(row, stats):

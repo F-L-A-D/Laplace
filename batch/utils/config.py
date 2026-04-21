@@ -10,5 +10,10 @@ SOURCE_CONFIG = {
         "label": "RAKUTEN",
         "min_interval": 0.8,
         "max_hotels": 15
+    },
+    2: {
+        "label": "JALAN",
+        "min_interval": 0.8,
+        "max_hotels": 10
     }
 }

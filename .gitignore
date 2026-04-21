@@ -18,3 +18,7 @@ dump.sql
 tmp.txt
 test.py
 tools/
+
+# raw
+*.csv
+*.png
